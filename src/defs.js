@@ -1,7 +1,6 @@
 // taken from https://github.com/rackt/react-router/blob/master/docs/introduction/README.md
 import React from 'react';
-
-import { Router, Route, Link } from 'react-router';
+import { Link } from 'react-router';
 
 const About = React.createClass({
 	render() {
@@ -50,15 +49,4 @@ const App = React.createClass({
 	}
 });
 
-export default function run(body) {
-	return React.renderToString((
-		<Router>
-			<Route path="/" component={App}>
-				<Route path="about" component={About} />
-				<Route path="inbox" component={Inbox}>
-					<Route path="messages/:id" component={Message} />
-				</Route>
-			</Route>
-		</Router>
-	));	
-}
+export { About,	Message, Inbox, App };
