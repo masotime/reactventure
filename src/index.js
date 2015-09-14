@@ -3,7 +3,7 @@ import routes from './routes';
 
 import render from './server/render';
 
-render(routes, '/', (err, result) => {
+render(routes, '/inbox/messages/1', (err, result) => {
 	if (err) {
 		console.error(err.stack);
 	} else {
