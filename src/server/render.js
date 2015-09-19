@@ -9,7 +9,6 @@ export default function render(routes, url, cb) {
 
 	const location = createLocation(url);
 	const handler = (err, redir, renderProps) => {
-		// 
 		if (redir) {
 			return cb(null, '<Redirect to '+ redir.pathname + redir.search + '>');
 		} else if (err) {
