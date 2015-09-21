@@ -9,17 +9,30 @@ export default function render(routes, url, cb) {
 
 	const location = createLocation(url);
 	const handler = (err, redir, renderProps) => {
-		if (redir) {
-			return cb(null, '<Redirect to '+ redir.pathname + redir.search + '>');
-		} else if (err) {
+
+		if (renderProps) {
+			renderProps.pineapple = 'red';
+		}
+
+		if (err) {
 			return cb(err);
+		} else if (redir) {
+			return cb(null, {
+				code: 302,
+				url: redir.pathname + redir.search
+			});
 		} else if (renderProps == null) {
-			return cb(new Error("404 Not found"));
+			return cb(null, {
+				code: 404
+			});
 		} else {
-			cb(null, React.renderToString(<RoutingContext {...renderProps} />));
+			cb(null, {
+				code: 200,
+				output: React.renderToString(<RoutingContext {...renderProps} />)
+			});
 		}
 	};
 
-	match({ routes, location}, handler);
+	match({ routes, location }, handler);
 
 }

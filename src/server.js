@@ -24,16 +24,29 @@ const routerMiddleware = ((router) => {
 	});
 
 	return router;
-}(express.Router()));
+})(express.Router());
 
 // we delegate rendering to a universal react catchall
 app.use(routerMiddleware);
 app.use('/*', (req, res) => {
-	render(routes, req.url, (err, result) => {
+	// DON'T USE req.url, it's part of http not express
+	render(routes, req.originalUrl, (err, result) => {
 		if (err) {
-			res.send(`<pre>An error occurred trying to render ${req.url}.\n${err.stack}</pre>`);
+			return res.status(500).send(err);
+		} else if (result.code === 302) {
+			return res.status(302).redirect(result.url);
+		} else if (result.code === 404) {
+			return res.status(404);
 		} else {
-			res.send(result);
+			return res.status(200).send(`
+<!doctype html>
+<html>
+	<head></head>
+	<body>
+		${result.output}
+	</body>
+</html>
+			`);
 		}
 	});
 });

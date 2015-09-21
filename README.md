@@ -12,5 +12,5 @@ Managed to figure out how to `renderToString` via react-router. The essence of i
   * serve.js does your bog-standard express app. Very basic.
 
 [1]: https://medium.com/@ghengeveld/isomorphism-vs-universal-javascript-4b47fb481beb
-[2]: https://github.com/rackt/react-router/blob/master/docs/advanced/ServerRendering.md
+[2]: https://github.com/rackt/react-router/blob/master/docs/guides/advanced/ServerRendering.md
 [3]: src/server/render.js
