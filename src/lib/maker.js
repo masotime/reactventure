@@ -1,7 +1,6 @@
 // makes stuff. server-side only please. It's not universal, but 凸 it.
 import shortid from 'shortid';
 import casual from 'casual';
-import { quickArray } from 'util';
 
 // just a fixed list of images to randomize from
 const images = [
@@ -31,14 +30,14 @@ casual.define('user', () => {
 		firstname: casual.first_name,
 		lastname: casual.last_name,
 		username: casual.username
-	}
+	};
 });
 
 casual.define('mediatype', () => {
 	const det = casual.random;
-	if (det < 1/2) {
-		return 'paragraph'
-	} else if (det < 3/4) {
+	if (det < 1 / 2) {
+		return 'paragraph';
+	} else if (det < 3 / 4) {
 		return 'image';
 	} else {
 		return 'video';
@@ -53,7 +52,7 @@ casual.define('media', (mediatype) => {
 		case 'paragraph': return casual.paragraph;
 		case 'image': return casual.image;
 		case 'video': return casual.video;
-	};
+	}
 });
 
 export default {
@@ -62,7 +61,7 @@ export default {
 		return {
 			id: `message-${casual.id}`,
 			'from': frm.id,
-			to: to.id, 
+			to: to.id,
 			message: casual.paragraph
 		};
 	},

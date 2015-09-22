@@ -1,7 +1,7 @@
-// This is a store. 
+// This is a store.
 import { createStore } from 'redux';
 import maker from '../lib/maker';
-import { quickArray, mapFromArray, choose, chooseUpTo } from '../lib/util';
+import { quickArray, choose, chooseUpTo } from '../lib/util';
 import { cloneDeep, remove } from 'lodash';
 
 // for simplicity, we will have users, messages, posts and media
