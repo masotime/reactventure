@@ -3,16 +3,13 @@
 import createLocation from 'react-router/node_modules/history/lib/createLocation';
 import { RoutingContext, match } from 'react-router';
 import React from 'react'
+import { inspect } from 'util';
 
 // note this is asynchronous callback-style
 export default function render(routes, url, cb) {
 
 	const location = createLocation(url);
 	const handler = (err, redir, renderProps) => {
-
-		if (renderProps) {
-			renderProps.pineapple = 'red';
-		}
 
 		if (err) {
 			return cb(err);
@@ -26,9 +23,11 @@ export default function render(routes, url, cb) {
 				code: 404
 			});
 		} else {
+			const output = React.renderToString(<RoutingContext {...renderProps} />);
+			console.log(output);
 			cb(null, {
 				code: 200,
-				output: React.renderToString(<RoutingContext {...renderProps} />)
+				output
 			});
 		}
 	};

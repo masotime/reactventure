@@ -26,6 +26,9 @@ const routerMiddleware = ((router) => {
 	return router;
 })(express.Router());
 
+// we serve static files (really just the webpack bundle)
+app.use(express.static('build/public'));
+
 // we delegate rendering to a universal react catchall
 app.use(routerMiddleware);
 app.use('/*', (req, res) => {
@@ -36,15 +39,14 @@ app.use('/*', (req, res) => {
 		} else if (result.code === 302) {
 			return res.status(302).redirect(result.url);
 		} else if (result.code === 404) {
-			return res.status(404);
+			return res.status(404).end();
 		} else {
 			return res.status(200).send(`
 <!doctype html>
 <html>
 	<head></head>
-	<body>
-		${result.output}
-	</body>
+	<body>${result.output}</body>
+	<script src="js/bundle.js"></script>
 </html>
 			`);
 		}
