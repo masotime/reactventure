@@ -46,6 +46,28 @@ const StatusBar = React.createClass({
 	}
 });
 
+const UserList = React.createClass({
+	render() {
+		const props = this.props;
+		return (
+			<ul>
+				{ props.users.map( user => <li><button type="button">`${user.username}`</button></li>) }
+			</ul>
+		);
+	}
+});
+
+const Login = React.createClass({
+	render() {
+		const props = this.props;
+		return (<div>
+			{
+				props.users ? <UserList users={props.users} /> : <span>No users found. Guess you&rsquo;re out of luck</span>
+			}
+		</div>)
+	}
+});
+
 const App = React.createClass({
 	render() {
 		const props = this.props;
@@ -77,4 +99,4 @@ const Dashboard = React.createClass({
 
 });
 
-export { About,	Message, Inbox, App, Dashboard };
+export { About,	Message, Inbox, App, Dashboard, Login };

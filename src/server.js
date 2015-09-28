@@ -23,6 +23,11 @@ const routerMiddleware = ((router) => {
 		next();
 	});
 
+	router.get('/login', (req, res, next) => {
+		console.log('Login page');
+		next();
+	})
+
 	return router;
 })(express.Router());
 
