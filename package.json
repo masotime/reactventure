@@ -19,6 +19,7 @@
     "react": "^0.13.3",
     "react-router": "^1.0.0-rc1",
     "redux": "^3.0.0",
-    "shortid": "^2.2.2"
+    "shortid": "^2.2.2",
+    "webpack": "^1.12.2"
   }
 }

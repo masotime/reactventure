@@ -38,7 +38,11 @@ const StatusBar = React.createClass({
 	render() {
 		const props = this.props;
 
-		return <h3>(props.username ? `You are logged in as ${props.username}` : `${<Link to="/login">Click here</Link>} to login.`</h3>;
+		if (props.username) {
+			return <h3>`You are logged in as ${props.username}`</h3>;
+		} else {
+			return <h3><Link to="/login">Click here</Link> to login.</h3>;
+		}
 	}
 });
 

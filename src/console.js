@@ -1,4 +1,3 @@
-import defs from './defs';
 import routes from './routes';
 
 import render from './server/render';
@@ -9,7 +8,7 @@ export default function (url) {
 		if (err) {
 			console.error(err.stack);
 		} else {
-			console.log(html_beautify(result));
+			console.log(html_beautify(result.output));
 		}
 	});
 }
