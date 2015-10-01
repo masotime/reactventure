@@ -2,8 +2,23 @@
 // taken from https://github.com/rackt/react-router/blob/master/docs/advanced/ServerRendering.md
 import createLocation from 'react-router/node_modules/history/lib/createLocation';
 import { RoutingContext, match } from 'react-router';
-import React from 'react'
+import React from 'react';
+
+// this is just for prettification
+import { html_beautify } from 'js-beautify';
 import { inspect } from 'util';
+
+// redux imports
+import { Provider } from 'react-redux';
+import getStore from '../redux/store';
+
+// redux decoration
+const reduxify = (component, store) => {
+	return {
+		component: <Provider store={store}>{() => component}</Provider>,
+		state: store.getState()
+	};
+}
 
 // note this is asynchronous callback-style
 export default function render(routes, url, cb) {
@@ -23,11 +38,19 @@ export default function render(routes, url, cb) {
 				code: 404
 			});
 		} else {
-			const output = React.renderToString(<RoutingContext {...renderProps} />);
-			console.log(output);
+			// prepare
+			const reactComponent = <RoutingContext {...renderProps} />;
+			const store = getStore();
+			const reduxified = reduxify(reactComponent, store);
+
+			// do it!
+			const output = React.renderToString(reduxified.component);
+			console.log(html_beautify(output));
+			console.log(inspect(reduxified.state, { depth: 1}));
 			cb(null, {
 				code: 200,
-				output
+				output: React.renderToString(reduxified.component),
+				state: reduxified.state
 			});
 		}
 	};

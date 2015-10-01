@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'; // this is needed by the transpiler
 import { Route, IndexRoute } from 'react-router';
 
 // we only need pages for routes

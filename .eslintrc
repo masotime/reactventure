@@ -1,7 +1,7 @@
 {
   "rules": {
     "no-undef": 2,
-    "no-unused-vars": 2
+    "no-unused-vars": [2, {"vars": "all", "args": "after-used", "varsIgnorePattern": "React"}]
   },
   "env": {
     "node": true,
@@ -13,5 +13,8 @@
   },
   "plugins": [
     "react"
-  ]
+  ],
+  "globals": {
+    "React": true
+  }
 }

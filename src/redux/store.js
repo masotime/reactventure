@@ -16,12 +16,12 @@ const initial = {
 };
 
 // messages and medias require users to be defined first
-initial.messages = quickArray(100, () => maker.message(...choose(users, 2)));
-initial.medias = quickArray(20, () => maker.media(choose(users, 1)));
+initial.messages = quickArray(5, () => maker.message(...choose(users, 2)));
+initial.medias = quickArray(5, () => maker.media(...choose(users, 1)));
 
 // posts require both medias and users
 // going to ignore that users can post media that's not their own.
-initial.posts = quickArray(50, () => maker.post(...choose(users, 1), chooseUpTo(initial.medias, 5)));
+initial.posts = quickArray(5, () => maker.post(...choose(users, 1), chooseUpTo(initial.medias, 5)));
 
 // stick with basic one first
 const reducer = (state = initial, action) => {

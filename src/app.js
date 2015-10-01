@@ -1,4 +1,5 @@
 // taken from https://github.com/rackt/react-router/blob/master/docs/introduction/README.md
+// this is effectively the "layout file"
 import React from 'react';
 import { Link } from 'react-router';
 

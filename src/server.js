@@ -46,11 +46,13 @@ app.use('/*', (req, res) => {
 		} else if (result.code === 404) {
 			return res.status(404).end();
 		} else {
+			// the whole __INITIAL_STATE__ thing is from https://goo.gl/bOrXPH
 			return res.status(200).send(`
 <!doctype html>
 <html>
 	<head></head>
 	<body>${result.output}</body>
+	<script>window.__INITIAL_STATE__ = ${result.state}</script>
 	<script src="js/bundle.js"></script>
 </html>
 			`);
