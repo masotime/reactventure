@@ -46,7 +46,7 @@ const StatusBar = React.createClass({
 	}
 });
 
-const UserList = React.createClass({
+const UserButtons = React.createClass({
 	render() {
 		const props = this.props;
 		return (
@@ -62,7 +62,7 @@ const Login = React.createClass({
 		const props = this.props;
 		return (<div>
 			{
-				props.users ? <UserList users={props.users} /> : <span>No users found. Guess you&rsquo;re out of luck</span>
+				props.users ? <UserButtons users={props.users} /> : <span>No users found. Guess you&rsquo;re out of luck</span>
 			}
 		</div>)
 	}

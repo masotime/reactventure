@@ -39,5 +39,5 @@ const reducer = (state = initial, action) => {
 };
 
 export default function getStore() {
-	return createStore(initial);
+	return createStore(reducer, initial);
 };
