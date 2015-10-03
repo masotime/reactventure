@@ -21,9 +21,9 @@ import getDb from '../lib/db';
 const serverSideInMemoryState = getDb();
 
 // react-redux decorator
-const reduxify = (component, store) => {
+const reduxify = (componentMaker, store) => {
 	return {
-		component: <Provider store={store}>{() => component}</Provider>,
+		component: <Provider store={store}>{componentMaker}</Provider>,
 		state: store.getState()
 	};
 }
@@ -47,9 +47,14 @@ export default function render(routes, url, cb) {
 			});
 		} else {
 			// prepare
-			const reactComponent = <RoutingContext {...renderProps} />;
+			// it must be a factory because React 0.13 is stupid or Provider
+			// is the epitome of a leaky abstraction
+			const reactComponentFactory = () => <RoutingContext {...renderProps} />;
+
+			// there is a horrible leaky abstraction that makes it impossible to stuff this
+			// into a generic function.
 			const store = createStore(reducer, serverSideInMemoryState);
-			const reduxified = reduxify(reactComponent, store);
+			const reduxified = reduxify(reactComponentFactory, store);
 
 			// do it!
 			const output = React.renderToString(reduxified.component);
@@ -57,7 +62,7 @@ export default function render(routes, url, cb) {
 			console.log(inspect(reduxified.state, { depth: 1}));
 			cb(null, {
 				code: 200,
-				output: React.renderToString(reduxified.component),
+				output: output,
 				state: reduxified.state
 			});
 		}

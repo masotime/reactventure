@@ -89,8 +89,4 @@ const Inbox = React.createClass({
 });
 */
 
-const ConnectedAbout = connect( state => { return { users: state.users }; } )(About);
-
-export default { 
-	About: ConnectedAbout,
-	Dashboard, Login, UsersPage, MessagesPage, MediasPage, PostsPage };
+export default { About, Dashboard, Login, UsersPage, MessagesPage, MediasPage, PostsPage };

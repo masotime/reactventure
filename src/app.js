@@ -27,7 +27,7 @@ const App = React.createClass({
 					<li><Link to="/dashboard">Dashboard</Link></li>
 					<li><Link to="/users">Users</Link></li>
 					<li><Link to="/posts">Posts</Link></li>
-					<li><Link to="/media">Media</Link></li>
+					<li><Link to="/medias">Media</Link></li>
 					<li><Link to="/messages">Messages</Link></li>
 					<li><Link to="/about">About</Link></li>
 				</ul>

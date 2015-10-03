@@ -82,7 +82,7 @@ const Post = React.createClass({
 		return (
 			<div>
 				<span>{props.user.firstname}</span>
-				{props.medias.map( media => <Media {...media} />)}
+				{props.medias.map( (media, idx) => <Media key={idx + props.id + media.id} {...media} />)}
 			</div>
 		);
 	}

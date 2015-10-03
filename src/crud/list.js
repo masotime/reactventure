@@ -9,7 +9,7 @@ const Users = React.createClass({
 		const props = this.props;
 
 		return (
-			<ul>{ props.page.map( user => <li><User {...user} /></li> ) }</ul>
+			<ul>{ props.page.map( user => <li key={user.id}><User {...user} /></li> ) }</ul>
 		);
 	}
 });
@@ -19,7 +19,7 @@ const Messages = React.createClass({
 		const props = this.props;
 
 		return (
-			<ul>{ props.page.map( message => <li><Message {...message} /></li>)}</ul>
+			<ul>{ props.page.map( message => <li key={message.id}><Message {...message} /></li>)}</ul>
 		);
 	}
 });
@@ -29,7 +29,7 @@ const Medias = React.createClass({
 		const props = this.props;
 
 		return (
-			<ul>{ props.page.map( media => <li><Media {...media} /></li>)}</ul>
+			<ul>{ props.page.map( media => <li key={media.id}><Media {...media} /></li>)}</ul>
 		);
 	}
 });
@@ -39,7 +39,7 @@ const Posts = React.createClass({
 		const props = this.props;
 
 		return (
-			<ul>{ props.page.map( post => <li><Post {...post} /></li>)}</ul>
+			<ul>{ props.page.map( post => <li key={post.id}><Post {...post} /></li>)}</ul>
 		);
 	}
 });

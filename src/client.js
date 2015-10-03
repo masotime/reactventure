@@ -12,20 +12,20 @@ const history = createHistory(); // so this will be a client-side history
 // this is the base react-router code
 import { Router } from 'react-router';
 import routes from './routes';
-const baseRouter = <Router history={history}>{routes}</Router>;
+const routerFactory = () => <Router history={history}>{routes}</Router>;
 
 // this is the reduxification code, assuming there is a 
 // window.__INITIAL_STATE__ already defined.
 import reducer from './redux/reducers';
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
-const initialized = (component, reducer, initialState) => {
+const initialized = (componentFactory, reducer, initialState) => {
 	return (
 		<Provider store={createStore(reducer, initialState)}>
-			{ () => component }
+			{ componentFactory }
 		</Provider>
 	);
 };
 
 // assuming it will magically work
-React.render(initialized(baseRouter, reducer, window.__INITIAL_STATE__), document.body);
+React.render(initialized(routerFactory, reducer, window.__INITIAL_STATE__), document.body);
