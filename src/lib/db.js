@@ -1,7 +1,6 @@
-// This is a store.
-import { createStore } from 'redux';
-import maker from '../lib/maker';
-import { quickArray, choose, chooseUpTo } from '../lib/util';
+// this is a faux database to work with. use this server-side only, to generate initial states.
+import maker from './maker';
+import { quickArray, choose, chooseUpTo } from './util';
 import { cloneDeep, remove } from 'lodash';
 
 // for simplicity, we will have users, messages, posts and media
@@ -23,21 +22,7 @@ initial.medias = quickArray(5, () => maker.media(...choose(users, 1)));
 // going to ignore that users can post media that's not their own.
 initial.posts = quickArray(5, () => maker.post(...choose(users, 1), chooseUpTo(initial.medias, 5)));
 
-// stick with basic one first
-const reducer = (state = initial, action) => {
-	const newState = cloneDeep(state);
-	const removeUsingId = type => remove(newState[type], 'id', action.id);
+const getDb = () => initial;
 
-	// let's just do deletion for now
-	switch (action.type) {
-		case 'DELETE_MESSAGE': removeUsingId('message'); break;
-		case 'DELETE_POST': removeUsingId('post'); break;
-		case 'DELETE_MEDIA': removeUsingId('media'); break;
-	}
-
-	return newState;
-};
-
-export default function getStore() {
-	return createStore(reducer, initial);
-};
+// getDb retrieves the same initial state always, i.e. it retrieves a mutable copy of the "database"
+export default getDb;

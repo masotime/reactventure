@@ -10,9 +10,17 @@ import { inspect } from 'util';
 
 // redux imports
 import { Provider } from 'react-redux';
-import getStore from '../redux/store';
+import { createStore } from 'redux';
 
-// redux decoration
+// app specific redux-related imports
+import reducer from '../redux/reducers';
+import getDb from '../lib/db';
+
+// define an initial in-memory database
+// this itself is mutable
+const serverSideInMemoryState = getDb();
+
+// react-redux decorator
 const reduxify = (component, store) => {
 	return {
 		component: <Provider store={store}>{() => component}</Provider>,
@@ -40,7 +48,7 @@ export default function render(routes, url, cb) {
 		} else {
 			// prepare
 			const reactComponent = <RoutingContext {...renderProps} />;
-			const store = getStore();
+			const store = createStore(reducer, serverSideInMemoryState);
 			const reduxified = reduxify(reactComponent, store);
 
 			// do it!

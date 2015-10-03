@@ -52,7 +52,8 @@ app.use('/*', (req, res) => {
 <html>
 	<head></head>
 	<body>${result.output}</body>
-	<script>window.__INITIAL_STATE__ = ${result.state}</script>
+	<!-- Hydration -->
+	<script>window.__INITIAL_STATE__ = ${JSON.stringify(result.state)}</script>
 	<script src="js/bundle.js"></script>
 </html>
 			`);

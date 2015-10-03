@@ -1,5 +1,6 @@
 import React from 'react';
 import { Users, Messages, Medias, Posts } from './crud/list';
+import { connect } from 'react-redux';
 
 const Dashboard = React.createClass({
 	render() {
@@ -46,11 +47,23 @@ const pageOf = (title, ListComponent) => {
 	});
 };
 
+// react-redux stuff, as a combinator
+const connected = (component, property) => {
+	const stateMapper = state => {
+		return {
+			page: state[property]
+		};
+	};
+	const connector = connect(stateMapper);
+
+	return connector(component);
+};
+
 const [ UsersPage, MessagesPage, MediasPage, PostsPage ] = [ 
-	pageOf('Users', Users),
-	pageOf('Messages', Messages),
-	pageOf('Medias', Medias),
-	pageOf('Posts', Posts)
+	connected(pageOf('Users', Users), 'users'),
+	connected(pageOf('Messages', Messages), 'messages'),
+	connected(pageOf('Medias', Medias), 'medias'),
+	connected(pageOf('Posts', Posts), 'posts')
 ];
 
 /* KIV for reference */
@@ -76,5 +89,8 @@ const Inbox = React.createClass({
 });
 */
 
+const ConnectedAbout = connect( state => { return { users: state.users }; } )(About);
 
-export { About,	Dashboard, Login, UsersPage, MessagesPage, MediasPage, PostsPage };
+export default { 
+	About: ConnectedAbout,
+	Dashboard, Login, UsersPage, MessagesPage, MediasPage, PostsPage };

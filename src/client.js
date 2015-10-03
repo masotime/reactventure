@@ -1,15 +1,31 @@
-/* global document */
+/* global document, window */
 // This is a client-side entry-point
 // It can use the same React components as the server-side, but essentially
 // this is the version that is loaded by the browser.
 
 import React from 'react';
-import routes from './routes';
-import { Router } from 'react-router';
 
 // the history nonsense is a pain
 import { createHistory } from 'react-router/node_modules/history';
 const history = createHistory(); // so this will be a client-side history
 
+// this is the base react-router code
+import { Router } from 'react-router';
+import routes from './routes';
+const baseRouter = <Router history={history}>{routes}</Router>;
+
+// this is the reduxification code, assuming there is a 
+// window.__INITIAL_STATE__ already defined.
+import reducer from './redux/reducers';
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
+const initialized = (component, reducer, initialState) => {
+	return (
+		<Provider store={createStore(reducer, initialState)}>
+			{ () => component }
+		</Provider>
+	);
+};
+
 // assuming it will magically work
-React.render(<Router history={history}>{routes}</Router>, document.body);
+React.render(initialized(baseRouter, reducer, window.__INITIAL_STATE__), document.body);
