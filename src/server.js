@@ -4,7 +4,23 @@ import render from './server/render';
 
 console.log(`Initializing...`);
 
+// all the webpack-hot-middleware stuff
+import webpack from 'webpack';
+import devMiddleware from 'webpack-dev-middleware';
+import hotMiddleware from 'webpack-hot-middleware';
+
 const app = express();
+
+// assumes "webpack", "devMiddleware" and "hotMiddleware" are in closure
+const ignite = (app, config) => {
+	const compiler = webpack(config);
+	app.use(devMiddleware(compiler, {
+		noInfo: true,
+		publicPath: config.output.publicPath
+	}));
+
+	app.use(hotMiddleware(compiler));
+}
 
 // define a route module to be used as middleware
 const routerMiddleware = ((router) => {
@@ -30,6 +46,10 @@ const routerMiddleware = ((router) => {
 
 	return router;
 })(express.Router());
+
+// add the hot middleware into the stack
+import webpackConfig from '../webpack.config';
+ignite(app, webpackConfig);
 
 // we serve static files (really just the webpack bundle)
 app.use(express.static('build/public'));

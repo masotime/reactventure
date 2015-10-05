@@ -1,7 +1,33 @@
 var webpack = require('webpack');
 var path = require('path');
 
-module.exports = {
+function ignite(config) {
+  // adds all the webpack-hot-middleware stuff
+  var newConfig = config; // can't make a clone, not sure why
+
+  /* Add 'webpack-hot-middleware/client' into the
+     entry array. This connects to the server to 
+     receive notifications when the bundle rebuilds 
+     and then updates your client bundle accordingly.
+  */
+  newConfig.entry.app = [
+    'webpack-hot-middleware/client'
+  ].concat(newConfig.entry.app);
+
+  /* Occurence ensures consistent build hashes, hot
+     module replacement is somewhat self-explanatory, 
+     no errors is used to handle errors more cleanly.
+  */
+  newConfig.plugins = [
+    new webpack.optimize.OccurenceOrderPlugin(),
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.NoErrorsPlugin()
+  ].concat(newConfig.plugins);
+
+  return newConfig;
+}
+
+var config = {
   entry: {
     app: [
       './src/client.js'
@@ -29,9 +55,12 @@ module.exports = {
     extensions: ['', '.jsx', '.js']
   },
   plugins: [
+    // i still don't know what this is for
     new webpack.DefinePlugin({
       'process.env.NODE_DEVTOOLS': JSON.stringify(process.env.NODE_DEVTOOLS),
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
     })
   ]
 };
+
+module.exports = ignite(config);
