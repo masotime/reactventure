@@ -1,8 +1,11 @@
 /* global document, window */
+
+// load stuff like css
+import './css/main.css';
+
 // This is a client-side entry-point
 // It can use the same React components as the server-side, but essentially
 // this is the version that is loaded by the browser.
-
 import React from 'react';
 
 // the history nonsense is a pain

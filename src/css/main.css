@@ -1,0 +1,47 @@
+body {
+    font-family: Avenir Next;
+    margin: 0;
+    padding: 0;
+    text-rendering: optimizeLegibility;
+}
+
+h1, h3 {
+    margin: 0;
+    padding: 8px 16px;
+}
+
+h1.header {
+    font-weight: 600;
+    width: 100%;
+    background: #333;
+    color: white;
+}
+
+h3 {
+    font-size: 14px;
+    font-weight: 400;
+    background-color: #FFFFEC;
+    text-align: right;
+}
+
+.nav {
+    list-style-type: none;
+    padding: 8px;
+    margin: 0;
+    background-color: #FFFFAA;
+}
+
+.nav li {
+    display: inline-block;
+    padding: 0 1em;
+    margin: 0;
+    border-right: 1px solid #ccc;    
+}
+
+a {
+    text-decoration: none;
+}
+
+a:focus, a:hover {
+    border-bottom: 1px dotted blue;
+}

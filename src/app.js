@@ -21,9 +21,9 @@ const App = React.createClass({
 
 		return (
 			<div>
-				<h1>BenBook</h1>
+				<h1 className="header">BenBook</h1>
 				<StatusBar {...props.session} />
-				<ul>
+				<ul className="nav">
 					<li><Link to="/dashboard">Dashboard</Link></li>
 					<li><Link to="/users">Users</Link></li>
 					<li><Link to="/posts">Posts</Link></li>
