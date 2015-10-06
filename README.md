@@ -15,7 +15,15 @@ Managed to figure out how to `renderToString` via react-router. The essence of i
 
 For JSX to be linted correctly, you need to install `eslint-plugin-react` _globally_. It's listed as a devDependency, but the sublime plugin needs a global copy.
 
+# React hot loading
+
+Uses the fancy new [react-transform-hmr][rhl1], but instead of the shitty use of `.babelrc`, we look at [this issue][rhl2] while taking care of the [new format][rhl3].
+
 
 [1]: https://medium.com/@ghengeveld/isomorphism-vs-universal-javascript-4b47fb481beb
 [2]: https://github.com/rackt/react-router/blob/master/docs/guides/advanced/ServerRendering.md
 [3]: src/server/render.js
+
+[rhl1]: https://github.com/gaearon/react-transform-hmr
+[rhl2]: https://github.com/gaearon/react-transform-hmr/issues/5
+[rhl3]: https://github.com/gaearon/babel-plugin-react-transform

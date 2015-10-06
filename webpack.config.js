@@ -27,6 +27,33 @@ function ignite(config) {
   return newConfig;
 }
 
+// adds the weird new react-transform-hmr nonsense
+function atomize(config) {
+  const newConfig = config;
+
+  newConfig.module.loaders.push({
+    test: /\.jsx?$/,
+    exclude: /node_modules/,
+    loader: 'babel',
+    query: {
+      stage: 0,
+      plugins: [ 'react-transform' ],
+      extra: {
+        'react-transform': {
+          'transforms': [{
+            transform: 'react-transform-hmr',
+            imports: ['react'],
+            locals: ['module']
+          }]
+        }
+      }
+    }
+
+  });
+
+  return newConfig;
+}
+
 var config = {
   entry: {
     app: [
@@ -40,11 +67,11 @@ var config = {
   },
   module: {
     loaders: [
-      {
+      /*{
         test: /\.jsx?$/,
         exclude: /node_modules/,
         loaders: [ 'babel?optional[]=runtime&optional[]=es7.decorators&optional[]=es7.exportExtensions&stage=2' ]
-      },
+      },*/
       {
         test: /\.css$/,
         loader: 'style-loader!css-loader'
@@ -63,4 +90,4 @@ var config = {
   ]
 };
 
-module.exports = ignite(config);
+module.exports = ignite(atomize(config));
