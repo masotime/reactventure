@@ -6,7 +6,7 @@ const Dashboard = React.createClass({
 	render() {
 		return (
 			<div>
-				<h1>This is a dashboard</h1>
+				<h1>This dashboard has been updated to <code>react@0.14</code> and <code>react-router@1.0.0-rc2</code></h1>
 				<p>Stats on the various entities should go here.</p>
 			</div>
 		);

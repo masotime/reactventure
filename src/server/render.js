@@ -1,8 +1,8 @@
 // for server-side rendering
 // taken from https://github.com/rackt/react-router/blob/master/docs/advanced/ServerRendering.md
-import createLocation from 'react-router/node_modules/history/lib/createLocation';
 import { RoutingContext, match } from 'react-router';
 import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 
 // this is just for prettification
 import { html_beautify } from 'js-beautify';
@@ -21,17 +21,16 @@ import getDb from '../lib/db';
 const serverSideInMemoryState = getDb();
 
 // react-redux decorator
-const reduxify = (componentMaker, store) => {
+const reduxify = (component, store) => {
 	return {
-		component: <Provider store={store}>{componentMaker}</Provider>,
+		component: <Provider store={store}>{component}</Provider>,
 		state: store.getState()
 	};
 }
 
 // note this is asynchronous callback-style
-export default function render(routes, url, cb) {
+export default function render(routes, location, cb) {
 
-	const location = createLocation(url);
 	const handler = (err, redir, renderProps) => {
 
 		if (err) {
@@ -47,17 +46,11 @@ export default function render(routes, url, cb) {
 			});
 		} else {
 			// prepare
-			// it must be a factory because React 0.13 is stupid or Provider
-			// is the epitome of a leaky abstraction
-			const reactComponentFactory = () => <RoutingContext {...renderProps} />;
-
-			// there is a horrible leaky abstraction that makes it impossible to stuff this
-			// into a generic function.
 			const store = createStore(reducer, serverSideInMemoryState);
-			const reduxified = reduxify(reactComponentFactory, store);
+			const reduxified = reduxify(<RoutingContext {...renderProps} />, store);
 
 			// do it!
-			const output = React.renderToString(reduxified.component);
+			const output = ReactDOMServer.renderToString(reduxified.component);
 			console.log(html_beautify(output));
 			console.log(inspect(reduxified.state, { depth: 1}));
 			cb(null, {

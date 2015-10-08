@@ -71,7 +71,8 @@ app.use('/*', (req, res) => {
 <!doctype html>
 <html>
 	<head></head>
-	<body>${result.output}</body>
+	<!-- I give up - it is way too troublesome to not render into an outer container -->
+	<body><div id="react-container">${result.output}</div></body>
 	<!-- Hydration -->
 	<script>window.__INITIAL_STATE__ = ${JSON.stringify(result.state)}</script>
 	<script src="js/bundle.js"></script>
