@@ -1,7 +1,6 @@
 // this is a faux database to work with. use this server-side only, to generate initial states.
 import maker from './maker';
 import { quickArray, choose, chooseUpTo } from './util';
-import { cloneDeep, remove } from 'lodash';
 
 // for simplicity, we will have users, messages, posts and media
 // * users are users, everything else is tied to a user.

@@ -58,7 +58,7 @@ app.use(express.static('build/public'));
 app.use(routerMiddleware);
 app.use('/*', (req, res) => {
 	// DON'T USE req.url, it's part of http not express
-	render(routes, req.originalUrl, (err, result) => {
+	render({ routes, location: req.originalUrl, state: req.session.state}, (err, result) => {
 		if (err) {
 			return res.status(500).send(err);
 		} else if (result.code === 302) {

@@ -24,13 +24,23 @@ const About = React.createClass({
 	}
 });
 
-const Login = React.createClass({
+const UserButtons = React.createClass({
 	render() {
 		const props = this.props;
+		return (<ul>
+			{props.users.map(user => <li key={user.id}><button type="button">{user.username}</button></li> )}
+		</ul>);
+	}
+});
+
+const Login = React.createClass({
+	render() {
+		const props = this.props,
+			hasUsers = props.users && props.users.length > 0;
+
 		return (<div>
-			{
-				props.users ? <UserButtons users={props.users} /> : <span>No users found. Guess you&rsquo;re out of luck</span>
-			}
+				<h2>{ hasUsers ? 'Select a user to login (no passwords wooo!)' : 'No users found. Guess you&rsquo;re out of luck'}</h2>
+				<UserButtons users={props.users} />
 		</div>);
 	}
 });
@@ -89,4 +99,4 @@ const Inbox = React.createClass({
 });
 */
 
-export default { About, Dashboard, Login, UsersPage, MessagesPage, MediasPage, PostsPage };
+export default { About, Dashboard, Login: connect(state => ({users: state.users}))(Login), UsersPage, MessagesPage, MediasPage, PostsPage };

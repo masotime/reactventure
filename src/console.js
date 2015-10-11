@@ -4,7 +4,7 @@ import render from './server/render';
 import { html_beautify } from 'js-beautify';
 
 export default function (url) {
-	render(routes, url, (err, result) => {
+	render({routes, location: url}, (err, result) => {
 		if (err) {
 			console.error(err.stack);
 		} else {

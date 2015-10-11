@@ -16,10 +16,6 @@ import { createStore } from 'redux';
 import reducer from '../redux/reducers';
 import getDb from '../lib/db';
 
-// define an initial in-memory database
-// this itself is mutable
-const serverSideInMemoryState = getDb();
-
 // react-redux decorator
 const reduxify = (component, store) => {
 	return {
@@ -29,7 +25,8 @@ const reduxify = (component, store) => {
 }
 
 // note this is asynchronous callback-style
-export default function render(routes, location, cb) {
+// render requires a state. if not provided, then a default initial state is used.
+export default function render({ routes, location, state = getDb()}, cb) {
 
 	const handler = (err, redir, renderProps) => {
 
@@ -46,7 +43,7 @@ export default function render(routes, location, cb) {
 			});
 		} else {
 			// prepare
-			const store = createStore(reducer, serverSideInMemoryState);
+			const store = createStore(reducer, state);
 			const reduxified = reduxify(<RoutingContext {...renderProps} />, store);
 
 			// do it!
