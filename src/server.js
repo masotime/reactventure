@@ -110,7 +110,7 @@ app.use(basicRoutes);
 app.use(securedRoutes);
 app.use('/*', (req, res) => {
 	// DON'T USE req.url, it's part of http not express
-	render({ routes, location: req.originalUrl, state: req.session.state}, (err, result) => {
+	render({ routes, location: req.originalUrl, state: req.session && req.session.state}, (err, result) => {
 		if (err) {
 			return res.status(500).send(err);
 		} else if (result.code === 302) {
