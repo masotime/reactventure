@@ -1,26 +1,20 @@
 import express from 'express';
 import routes from './routes';
 import render from './server/render';
+import ignite from './lib/ignite'; // this adds webpack hot loading
+import reducer from './redux/reducers'; // this adds the univesal reducers
 
-// all the webpack-hot-middleware stuff
-import webpack from 'webpack';
-import devMiddleware from 'webpack-dev-middleware';
-import hotMiddleware from 'webpack-hot-middleware';
+// database hydration code - REFACTOR
+import getDb from './lib/db';
+const hydrateSession = (req) => {
+	if (req && req.session) {
+		req.session.state = getDb();
+	}
+}
 
 console.log(`Server initializing...`);
 
 const app = express();
-
-// assumes "webpack", "devMiddleware" and "hotMiddleware" are in closure
-const ignite = (app, config) => {
-	const compiler = webpack(config);
-	app.use(devMiddleware(compiler, {
-		noInfo: true,
-		publicPath: config.output.publicPath
-	}));
-
-	app.use(hotMiddleware(compiler));
-}
 
 // these are basic routes, without security
 const basicRoutes = ((router) => {
@@ -102,6 +96,14 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.text());
 
+// add session support
+import session from 'express-session';
+app.use(session({
+	resave: false,
+	saveUninitialized: false,
+	secret: 'pineapple'
+}));
+
 // we serve static files (really just the webpack bundle)
 app.use(express.static('build/public'));
 
@@ -109,8 +111,13 @@ app.use(express.static('build/public'));
 app.use(basicRoutes);
 app.use(securedRoutes);
 app.use('/*', (req, res) => {
+
+	// NOTE: I may not want to use session / state if I can avoid it
+	// TODO: More thinking needed.
+	hydrateSession(req);
+
 	// DON'T USE req.url, it's part of http not express
-	render({ routes, location: req.originalUrl, state: req.session && req.session.state}, (err, result) => {
+	render({ routes, location: req.originalUrl, reducer, state: req.session.state}, (err, result) => {
 		if (err) {
 			return res.status(500).send(err);
 		} else if (result.code === 302) {

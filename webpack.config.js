@@ -67,11 +67,6 @@ var config = {
   },
   module: {
     loaders: [
-      /*{
-        test: /\.jsx?$/,
-        exclude: /node_modules/,
-        loaders: [ 'babel?optional[]=runtime&optional[]=es7.decorators&optional[]=es7.exportExtensions&stage=2' ]
-      },*/
       {
         test: /\.css$/,
         loader: 'style-loader!css-loader'

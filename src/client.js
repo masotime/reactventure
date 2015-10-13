@@ -1,32 +1,28 @@
-/* global document, window */
+/* global window */
+// This is a client-side entry-point
+// It can use the same React components as the server-side, but essentially
+// this is the version that is loaded by the browser.
 
 // load stuff like css
 import './css/main.css';
 
-// This is a client-side entry-point
-// It can use the same React components as the server-side, but essentially
-// this is the version that is loaded by the browser.
-import React from 'react'; // still needed to createElement(s) as transpiled by Babel from JSX
-import ReactDOM from 'react-dom';
-
-// the history nonsense is a pain
-import { createHistory } from 'react-router/node_modules/history';
-const history = createHistory(); // so this will be a client-side history
-
-// this is the base react-router code
-import { Router } from 'react-router';
+// this is the application specific routes and reducers
 import routes from './routes';
-
-// this is the reduxification code, assuming there is a 
-// window.__INITIAL_STATE__ already defined.
 import reducer from './redux/reducers';
-import { createStore } from 'redux';
-import { Provider } from 'react-redux';
-const initialized = (component, reducer, initialState) => {
-	return (
-		<Provider store={createStore(reducer, initialState)}>{ component }</Provider>
-	);
-};
+
+// load the client-side renderer
+import render from './client/render';
 
 // assuming it will magically work
-ReactDOM.render(initialized(<Router history={history}>{routes}</Router>, reducer, window.__INITIAL_STATE__), document.getElementById('react-container'));
+render({
+	routes,
+	location: window.location, // this is unused, but here to maintain parity with server-side "render"
+	reducer,
+	state: window.__INITIAL_STATE__
+}, (err) => {
+	if (err) {
+		console.error(err);
+	} else {
+		console.log('React component mounted');	
+	}
+});

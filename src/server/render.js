@@ -4,17 +4,9 @@ import { RoutingContext, match } from 'react-router';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-// this is just for prettification
-import { html_beautify } from 'js-beautify';
-import { inspect } from 'util';
-
 // redux imports
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
-
-// app specific redux-related imports
-import reducer from '../redux/reducers';
-import getDb from '../lib/db';
 
 // react-redux decorator
 const reduxify = (component, store) => {
@@ -24,9 +16,17 @@ const reduxify = (component, store) => {
 	};
 }
 
+// this is just for prettification, it is completely optional
+import { html_beautify } from 'js-beautify';
+import { inspect } from 'util';
+const log = (htmlOutput, state) => {
+	console.log(html_beautify(htmlOutput));
+	console.log(inspect(state, { depth: 1}));
+}
+
 // note this is asynchronous callback-style
 // render requires a state. if not provided, then a default initial state is used.
-export default function render({ routes, location, state = getDb()}, cb) {
+export default function render({ routes, location, reducer, state}, cb) {
 
 	const handler = (err, redir, renderProps) => {
 
@@ -48,8 +48,7 @@ export default function render({ routes, location, state = getDb()}, cb) {
 
 			// do it!
 			const output = ReactDOMServer.renderToString(reduxified.component);
-			console.log(html_beautify(output));
-			console.log(inspect(reduxified.state, { depth: 1}));
+			log(output, reduxified.state); // optional logging
 			cb(null, {
 				code: 200,
 				output: output,
