@@ -7,12 +7,36 @@ import { About, Dashboard, Login, UsersPage, MessagesPage, MediasPage, PostsPage
 // we also need a master "App" layout
 import App from './app';
 
+// "Universal" authentication module
+const auth = (() => {
+	let isLoggedIn = false; // this will be our variable
+
+	const loggedIn = () => isLoggedIn;
+	const logout = () => {
+		isLoggedIn = false;
+	}
+	const login = () => {
+		isLoggedIn = true;
+	}
+
+	return { loggedIn, logout, login };
+
+})();
+
 // this is a universal function. It _only_ checks for authentication
 // it does not verify the token, if any. You cannot make data loading
 // univesal because you cannot dump unauthorized data client-side, which
 // is an obvious breach of security
 const requireAuth = (nextState, replaceState) => {
+	if (!auth.loggedIn()) {
+		replaceState({ nextPathname: nextState.location.pathname }, '/login');
+	}
+}
 
+// universal "logout"
+const logout = (nextState, replaceState) => {
+	auth.logout();
+	replaceState({ nextPathname: nextState.location.pathname }, '/');
 }
 
 export default (
@@ -21,6 +45,7 @@ export default (
 		<Route path="dashboard" component={Dashboard} />
 		<Route path="about" component={About} />
 		<Route path="login" component={Login} />
+		<Route path="logout" component={Logout} onEnter={logout} />
 
 		{/* These are protected routes */}
 		<Route path="users" component={UsersPage} onEnter={requireAuth} />

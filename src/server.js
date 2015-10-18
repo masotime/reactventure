@@ -141,6 +141,16 @@ app.use('/*', (req, res) => {
 	});
 });
 
+// error handling. there doesn't seem to be any elegant way to handle this
+app.use(function handleErrors(err, req, res, next) {
+	console.error(err && err.stack);
+	if (err.name === 'UnauthorizedError') {
+		res.redirect('/login');
+	} else {
+		next(err);
+	}
+});
+
 const server = app.listen(8000, () => {
 	const started = server.address();
 	console.log(`Example app listening at http:\/\/${started.address}:${started.port}`);

@@ -37,14 +37,14 @@ const Message = React.createClass({
 const Video = React.createClass({
 	render() {
 		const props = this.props;
-		return (<video src={props.src} poster={props.poster} />);
+		return (<video controls width="640" height="480" src={props.src} poster={props.poster} />);
 	}
 });
 
 const Image = React.createClass({
 	render() {
 		const props = this.props;
-		return (<img src={props.src} />);
+		return (<img width="640" src={props.src} />);
 	}
 });
 
