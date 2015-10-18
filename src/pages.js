@@ -45,6 +45,12 @@ const Login = React.createClass({
 	}
 });
 
+const Logout = React.createClass({
+	render () {
+		return (<div><h2>You have logged out</h2></div>);
+	}
+});
+
 const pageOf = (title, ListComponent) => {
 	return React.createClass({
 		render() {
@@ -99,4 +105,8 @@ const Inbox = React.createClass({
 });
 */
 
-export default { About, Dashboard, Login: connect(state => ({users: state.users}))(Login), UsersPage, MessagesPage, MediasPage, PostsPage };
+export default { 
+	About, Dashboard, // public pages
+	Login: connect(state => ({users: state.users}))(Login), Logout, // auth related
+	UsersPage, MessagesPage, MediasPage, PostsPage // protected pages
+};

@@ -2,7 +2,7 @@ import React from 'react'; // this is needed by the transpiler
 import { Route, IndexRoute } from 'react-router';
 
 // we only need pages for routes
-import { About, Dashboard, Login, UsersPage, MessagesPage, MediasPage, PostsPage } from './pages';
+import { About, Dashboard, Login, Logout, UsersPage, MessagesPage, MediasPage, PostsPage } from './pages';
 
 // we also need a master "App" layout
 import App from './app';
@@ -28,6 +28,7 @@ const auth = (() => {
 // univesal because you cannot dump unauthorized data client-side, which
 // is an obvious breach of security
 const requireAuth = (nextState, replaceState) => {
+	console.log(nextState);
 	if (!auth.loggedIn()) {
 		replaceState({ nextPathname: nextState.location.pathname }, '/login');
 	}
