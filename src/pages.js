@@ -25,10 +25,21 @@ const About = React.createClass({
 });
 
 const UserButtons = React.createClass({
+	login(user) {
+		const { dispatch } = this.props;
+		const action = { type: 'ROUTE', url: '/login', payload: { name: user.username, password: '' }, user: user.id };
+		console.log(action);
+		return () => dispatch(action);
+	},
+
 	render() {
 		const props = this.props;
+		const handlers = {
+			login: this.login.bind(this) // ugh...
+		};
+
 		return (<ul>
-			{props.users.map(user => <li key={user.id}><button type="button">{user.username}</button></li> )}
+			{props.users.map(user => <li key={user.id}><button onClick={handlers.login(user)}type="button">{user.username}</button></li> )}
 		</ul>);
 	}
 });
@@ -36,11 +47,12 @@ const UserButtons = React.createClass({
 const Login = React.createClass({
 	render() {
 		const props = this.props,
+			dispatch = props.dispatch,
 			hasUsers = props.users && props.users.length > 0;
 
 		return (<div>
 				<h2>{ hasUsers ? 'Select a user to login (no passwords wooo!)' : 'No users found. Guess you&rsquo;re out of luck'}</h2>
-				<UserButtons users={props.users} />
+				<UserButtons dispatch={dispatch} users={props.users} />
 		</div>);
 	}
 });

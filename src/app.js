@@ -2,18 +2,19 @@
 // this is effectively the "layout file"
 import React from 'react';
 import { Link } from 'react-router';
+import { connect } from 'react-redux';
 
-const StatusBar = React.createClass({
+const StatusBar = connect( state => ({username: state.auth.user}))(React.createClass({
 	render() {
 		const props = this.props;
 
 		if (props.username) {
-			return <h3>`You are logged in as ${props.username}`</h3>;
+			return <h3>{`You are logged in as ${props.username}`}. <Link to="/logout">Logout</Link></h3>;
 		} else {
 			return <h3><Link to="/login">Click here</Link> to login.</h3>;
 		}
 	}
-});
+}));
 
 const App = React.createClass({
 	render() {

@@ -19,7 +19,9 @@ export default store => {
 	}
 
 	const logout = () => {
-		store.dispatch('/logout'); // ??? then what?
+		const logoutAction = { type: 'ROUTE', url: '/logout' };
+		console.log(logoutAction);
+		store.dispatch(logoutAction); // ??? then what?
 	}
 
 	return (<Route path="/" component={App}>
