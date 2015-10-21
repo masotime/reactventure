@@ -6,7 +6,6 @@ import ReactDOMServer from 'react-dom/server';
 
 // redux imports
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
 
 // react-redux decorator
 const reduxify = (component, store) => {
@@ -26,7 +25,7 @@ const log = (htmlOutput, state) => {
 
 // note this is asynchronous callback-style
 // render requires a state. if not provided, then a default initial state is used.
-export default function render({ routes, location, reducer, state}, cb) {
+export default function render({ routes, location, store}, cb) {
 
 	const handler = (err, redir, renderProps) => {
 
@@ -43,7 +42,6 @@ export default function render({ routes, location, reducer, state}, cb) {
 			});
 		} else {
 			// prepare
-			const store = createStore(reducer, state);
 			const reduxified = reduxify(<RoutingContext {...renderProps} />, store);
 
 			// do it!

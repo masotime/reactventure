@@ -21,6 +21,14 @@ initial.medias = quickArray(5, () => maker.media(...choose(users, 1)));
 // going to ignore that users can post media that's not their own.
 initial.posts = quickArray(5, () => maker.post(...choose(users, 1), chooseUpTo(initial.medias, 5)));
 
+// add the basic authentication state
+initial.auth = {
+	user: undefined,
+	loggingIn: false,
+	loggedIn: false,
+	error: undefined
+};
+
 const getDb = () => initial;
 
 // getDb retrieves the same initial state always, i.e. it retrieves a mutable copy of the "database"

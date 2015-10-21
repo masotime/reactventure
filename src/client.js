@@ -7,18 +7,23 @@
 import './css/main.css';
 
 // this is the application specific routes and reducers
-import routes from './routes';
-import reducer from './redux/reducers';
+import routesFactory from './routes';
+
+// we prepare a store creation function with a reducer and server-side specific middleware
+import reducer from './redux/reducers'; // this adds the univesal reducers
+import controller from './client/controller'; // this adds a client-side specific "data fetcher"
+import storeMaker from './redux/store'; // lol... i need to refactor this
+const getStore = storeMaker(reducer, controller);
 
 // load the client-side renderer
 import render from './client/render';
 
 // assuming it will magically work
+const store = getStore(window.__INITIAL_STATE__);
 render({
-	routes,
+	routes: routesFactory(store),
 	location: window.location, // this is unused, but here to maintain parity with server-side "render"
-	reducer,
-	state: window.__INITIAL_STATE__
+	store
 }, (err) => {
 	if (err) {
 		console.error(err);

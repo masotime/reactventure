@@ -1,8 +1,7 @@
 import express from 'express';
-import routes from './routes';
+import routesFactory from './routes';
 import render from './server/render';
 import ignite from './lib/ignite'; // this adds webpack hot loading
-import reducer from './redux/reducers'; // this adds the univesal reducers
 
 // database hydration code - REFACTOR
 import getDb from './lib/db';
@@ -11,6 +10,12 @@ const hydrateSession = (req) => {
 		req.session.state = getDb();
 	}
 }
+
+// we prepare a store creation function with a reducer and server-side specific middleware
+import reducer from './redux/reducers'; // this adds the univesal reducers
+import controller from './server/controller'; // this adds a server-side specific "data fetcher"
+import storeMaker from './redux/store'; // lol... i need to refactor this
+const getStore = storeMaker(reducer, controller);
 
 console.log(`Server initializing...`);
 
@@ -115,9 +120,10 @@ app.use('/*', (req, res) => {
 	// NOTE: I may not want to use session / state if I can avoid it
 	// TODO: More thinking needed.
 	hydrateSession(req);
+	const store = getStore(req.session.state);
 
 	// DON'T USE req.url, it's part of http not express
-	render({ routes, location: req.originalUrl, reducer, state: req.session.state}, (err, result) => {
+	render({ routes: routesFactory(store), location: req.originalUrl, store}, (err, result) => {
 		if (err) {
 			return res.status(500).send(err);
 		} else if (result.code === 302) {

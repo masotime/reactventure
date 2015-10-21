@@ -1,16 +1,31 @@
-import routes from './routes';
+import routesFactory from './routes';
 
 import render from './server/render';
 import { html_beautify } from 'js-beautify';
 
+// everything redux related
 import reducer from './redux/reducers'; // this adds the univesal reducers
-import getDb from './lib/db';
+import controller from './server/controller'; // this adds a server-side specific "data fetcher"
+import storeMaker from './redux/store'; // lol... i need to refactor this
+const getStore = storeMaker(reducer, controller);
 
-export default function (url) {
-	render({ routes, location: url, reducer, state: getDb() }, (err, result) => {
+import getDb from './lib/db';
+export default function browse(url) {
+	const store = getStore(getDb());
+	const routes = routesFactory(store);
+
+	render({ routes, location: url, store }, (err, result) => {
 		if (err) {
+			console.error('Rendering error');
 			console.error(err.stack);
 		} else {
+			// deal with unexpected codes
+			switch (result.code) {
+				case 404: return console.log('Not found');
+				case 302: return browse(result.url);
+			}
+
+			console.log('Rendering success');
 			console.log(html_beautify(result.output));
 		}
 	});

@@ -7,41 +7,22 @@ import { About, Dashboard, Login, Logout, UsersPage, MessagesPage, MediasPage, P
 // we also need a master "App" layout
 import App from './app';
 
-// "Universal" authentication module
-const auth = (() => {
-	let isLoggedIn = false; // this will be our variable
+export default store => {
 
-	const loggedIn = () => isLoggedIn;
+	// i can't think of a clean way to decouple this from the store and dispatch
+	const requireAuth = (nextState, replaceState) => {
+		const { auth: { loggedIn }} = store.getState();
+
+		if (!loggedIn) {
+			replaceState(null, '/login');
+		}
+	}
+
 	const logout = () => {
-		isLoggedIn = false;
-	}
-	const login = () => {
-		isLoggedIn = true;
+		store.dispatch('/logout'); // ??? then what?
 	}
 
-	return { loggedIn, logout, login };
-
-})();
-
-// this is a universal function. It _only_ checks for authentication
-// it does not verify the token, if any. You cannot make data loading
-// univesal because you cannot dump unauthorized data client-side, which
-// is an obvious breach of security
-const requireAuth = (nextState, replaceState) => {
-	console.log(nextState);
-	if (!auth.loggedIn()) {
-		replaceState({ nextPathname: nextState.location.pathname }, '/login');
-	}
-}
-
-// universal "logout"
-const logout = (nextState, replaceState) => {
-	auth.logout();
-	replaceState({ nextPathname: nextState.location.pathname }, '/');
-}
-
-export default (
-	<Route path="/" component={App}>
+	return (<Route path="/" component={App}>
 		<IndexRoute component={Dashboard} />
 		<Route path="dashboard" component={Dashboard} />
 		<Route path="about" component={About} />
@@ -53,8 +34,10 @@ export default (
 		<Route path="messages" component={MessagesPage} onEnter={requireAuth} />
 		<Route path="medias" component={MediasPage} onEnter={requireAuth} />
 		<Route path="posts" component={PostsPage} onEnter={requireAuth} />
-	</Route>
-);
+	</Route>);
+
+
+}
 
 // KIV this stuff
 /*

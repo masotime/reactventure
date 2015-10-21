@@ -6,7 +6,6 @@ import ReactDOM from 'react-dom';
 
 // redux imports
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
 
 // react-redux decorator
 const reduxify = (component, store) => {
@@ -20,10 +19,9 @@ const reduxify = (component, store) => {
 import { createHistory } from 'react-router/node_modules/history';
 const history = createHistory(); // so this will be a client-side history
 
-export default function render({ routes, location, reducer, state }, cb) {
+export default function render({ routes, location, store }, cb) {
 
 	// prepare
-	const store = createStore(reducer, state);
 	const reduxified = reduxify(<Router history={history}>{routes}</Router>, store); // in contrast to <RoutingContext> server-side
 
 	// assuming it will magically work
