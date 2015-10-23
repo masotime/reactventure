@@ -6,7 +6,7 @@ import jwtExpress from 'express-jwt';
 import jwt from 'jsonwebtoken';
 import keys from './keys';
 
-const authenticate = jwtExpress({
+const authMiddleware = jwtExpress({
 	secret: new Buffer(keys.CLIENT_SECRET, 'base64'),
 	audience: keys.CLIENT_ID,
 	// Custom function to retrieve the JWT - look for it in header, then look in cookie
@@ -31,6 +31,13 @@ const generate = (payload) => {
 	});
 }
 
+// synchronous? asynchronous? to A or not to A.
+const auth = (user, password) => {
+	// we ignore the password
+	console.log(`auth on ${user} / ${password}`);
+	return true;
+}
+
 export default {
-	authenticate, generate
+	authMiddleware, generate, auth
 };

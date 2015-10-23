@@ -10,7 +10,7 @@
 //   the top or the previous middleware
 export default store => next => action => {
 
-	if (action.url) {
+	if (action.type === 'ROUTE') {
 		action.method = action.method || 'GET'; // default method
 
 		// here we ignore setting a state of pending. Such a state would

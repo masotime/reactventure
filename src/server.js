@@ -44,15 +44,23 @@ const basicRoutes = ((router) => {
 
 // we introduce secured routes. 
 // see https://auth0.com/blog/2015/09/28/5-steps-to-add-modern-authentication-to-legacy-apps-using-jwts/
-import { authenticate, generate } from './lib/jwt';
+import { authMiddleware, auth, generate } from './lib/jwt';
 import moment from 'moment';
-const securedRoutes = ((router, generate, authenticate) => {
 
-	// this route does the acutal login stuff
-	// NOTE: This doesn't check to see if the user_id is actually an existing one!
+// TODO: the function parameters are irritatingly confusing
+const securedRoutes = ((router, generate, auth, authenticate) => {
+
+	// this route does the actual login stuff
 	router.post('/login', (req, res) => {
-		const id_token = generate({ user_id: req.body.user_id });
-		res.json({ id_token });
+		if (auth(req.body.username, req.body.password)) {
+			res.json({
+				token: generate({ user_id: req.body.user_id }) // this is needed for client-side
+			});
+		} else {
+			// respond with an action
+			res.stats(500).json({ code: 'AUTH_FAILURE',  })
+		}
+		
 	});
 
 	// this route checks the header for a valid jwt and 
@@ -88,7 +96,7 @@ const securedRoutes = ((router, generate, authenticate) => {
 
 	return router;
 
-})(express.Router(), generate, authenticate);
+})(express.Router(), generate, auth, authMiddleware);
 
 // add the hot middleware into the stack
 import webpackConfig from '../webpack.config';
