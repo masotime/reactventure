@@ -11,7 +11,6 @@
 export default store => next => action => {
 
 	if (action.type === 'ROUTE') {
-		action.method = action.method || 'GET'; // default method
 
 		// here we ignore setting a state of pending. Such a state would
 		// only be meaningful if we immediately render such a state. The client

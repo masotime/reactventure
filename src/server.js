@@ -21,83 +21,6 @@ console.log(`Server initializing...`);
 
 const app = express();
 
-// these are basic routes, without security
-const basicRoutes = ((router) => {
-	router.get('/', (req, res, next) => {
-		console.log('Index page');
-		next();
-	});
-
-	router.get('/about', (req, res, next) => {
-		console.log('About page');
-		next();
-	});
-
-	router.get('/login', (req, res, next) => {
-		console.log('Login page');
-		next();
-	});
-
-
-	return router;
-})(express.Router());
-
-// we introduce secured routes. 
-// see https://auth0.com/blog/2015/09/28/5-steps-to-add-modern-authentication-to-legacy-apps-using-jwts/
-import { authMiddleware, auth, generate } from './lib/jwt';
-import moment from 'moment';
-
-// TODO: the function parameters are irritatingly confusing
-const securedRoutes = ((router, generate, auth, authenticate) => {
-
-	// this route does the actual login stuff
-	router.post('/login', (req, res) => {
-		if (auth(req.body.username, req.body.password)) {
-			res.json({
-				token: generate({ user_id: req.body.user_id }) // this is needed for client-side
-			});
-		} else {
-			// respond with an action
-			res.stats(500).json({ code: 'AUTH_FAILURE',  })
-		}
-		
-	});
-
-	// this route checks the header for a valid jwt and 
-	// sets an appropriate cookie. "authenticate" adds
-	// the token to the body which we will retrieve
-	router.post('/authorize-cookie', authenticate, (req, res) => {
-		res.cookie('id_token', req.body.token, {
-			expires: moment().add(1, 'hour'),
-			httpOnly: true
-		});
-		res.json({ message: 'Cookie set!' });
-	});
-
-	router.get('/users', authenticate, (req, res, next) => {
-		console.log('Users page');
-		next();
-	});
-
-	router.get('/posts', authenticate, (req, res, next) => {
-		console.log('Posts page');
-		next();
-	});
-
-	router.get('/media', authenticate, (req, res, next) => {
-		console.log('Media page');
-		next();
-	});
-
-	router.get('/messages', authenticate, (req, res, next) => {
-		console.log('Messages page');
-		next();
-	});
-
-	return router;
-
-})(express.Router(), generate, auth, authMiddleware);
-
 // add the hot middleware into the stack
 import webpackConfig from '../webpack.config';
 ignite(app, webpackConfig);
@@ -120,9 +43,13 @@ app.use(session({
 // we serve static files (really just the webpack bundle)
 app.use(express.static('build/public'));
 
-// we delegate rendering to a universal react catchall
+// we apply express routes
+import { basicRoutes, securedRoutes, authRoutes } from './server/routes';
 app.use(basicRoutes);
 app.use(securedRoutes);
+app.use(authRoutes);
+
+// we delegate rendering to a universal react catchall
 app.use('/*', (req, res) => {
 
 	// NOTE: I may not want to use session / state if I can avoid it

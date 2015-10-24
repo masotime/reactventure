@@ -18,7 +18,6 @@
 export default store => next => action => {
 
 	if (action.url) {
-		action.method = action.method || 'GET'; // default method
 
 		// start by initiating - we will define an attribute "state" that
 		// represents the state of the "request" - 'pending', 'success', 'error'
@@ -29,7 +28,7 @@ export default store => next => action => {
 		// simplified here, should use express router eventually
 		switch (action.url) {
 			case '/login':
-				const { name, password } = action.payload;
+				const { name, password } = action.body;
 				// fake a login request
 				console.log(`Mock login using ${name} / ${password} started...`);
 				return setTimeout(() => {
