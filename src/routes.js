@@ -7,6 +7,9 @@ import { About, Dashboard, Login, Logout, UsersPage, MessagesPage, MediasPage, P
 // we also need a master "App" layout
 import App from './app';
 
+// this is for creating actions
+import { GET } from './redux/actions';
+
 export default store => {
 
 	// i can't think of a clean way to decouple this from the store and dispatch
@@ -19,8 +22,7 @@ export default store => {
 	}
 
 	const logout = () => {
-		const logoutAction = { type: 'ROUTE', url: '/logout' };
-		console.log(logoutAction);
+		const logoutAction = GET('/logout')({});
 		store.dispatch(logoutAction); // ??? then what?
 	}
 

@@ -11,9 +11,9 @@ import routesFactory from './routes';
 
 // we prepare a store creation function with a reducer and server-side specific middleware
 import reducer from './redux/reducers'; // this adds the univesal reducers
-import controller from './client/controller'; // this adds a client-side specific "data fetcher"
+import xhr from './client/xhr'; // xhr acts as a middleware to dispatch to server-side
 import storeMaker from './redux/store'; // lol... i need to refactor this
-const getStore = storeMaker(reducer, controller);
+const getStore = storeMaker(reducer, xhr);
 
 // load the client-side renderer
 import render from './client/render';

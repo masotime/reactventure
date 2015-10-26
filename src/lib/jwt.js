@@ -5,6 +5,7 @@
 import jwtExpress from 'express-jwt';
 import jwt from 'jsonwebtoken';
 import keys from './keys';
+import { find } from 'lodash';
 
 const authMiddleware = jwtExpress({
 	secret: new Buffer(keys.CLIENT_SECRET, 'base64'),
@@ -32,10 +33,16 @@ const generate = (payload) => {
 }
 
 // synchronous? asynchronous? to A or not to A.
+import getDb from './db';
 const auth = (user, password) => {
 	// we ignore the password
-	console.log(`auth on ${user} / ${password}`);
-	return true;
+	console.log(`auth on ${user} / ${password} auto-success`);
+
+	// returns the id of the user
+	// i should have used a proper db. this is messy
+	const db = getDb();
+	const userObj = find(db.users, { username: user });
+	return userObj && userObj.id;
 }
 
 export default {

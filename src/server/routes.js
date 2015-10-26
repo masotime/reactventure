@@ -52,21 +52,32 @@ const securedRoutes = ((router, authMiddleware) => {
 
 // these are authentication routes
 // see https://auth0.com/blog/2015/09/28/5-steps-to-add-modern-authentication-to-legacy-apps-using-jwts/
-import { auth, generate } from './lib/jwt';
-import { routeAction, applyState } from './lib/jwt';
+import { auth, generate } from '../lib/jwt';
+import { POST, GET, applyState } from '../redux/actions';
 const authRoutes = ((router, auth, generate) => {
 
 	// this route does the actual login stuff
-	router.post('/login', (req, res) => {
-		if (auth(req.body.username, req.body.password)) {
-			res.json({
-				token: generate({ user_id: req.body.user_id }) // this is needed for client-side
-			});
+	router.post('/login', (req, res, next) => {
+		const action = POST('/login')(req.body);
+		const id = auth(action.body.name, action.body.password);
+		if (id) {
+			// generate a JSON action response
+			action.body.token = generate({ user_id: id });
+			res.action = applyState('success')(action);
 		} else {
 			// respond with an action
-			res.stats(500).json({ code: 'AUTH_FAILURE',  })
+			res.action = applyState('error', { 
+				message: 'Authentication failure'
+			})(action);
 		}
-		
+
+		next();
+	});
+
+	router.get('/logout', (req, res, next) => {
+		const action = GET('/logout')({}); // GET has no body. params?
+		res.action = applyState('success')(action);
+		next();
 	});
 
 	// this route checks the header for a valid jwt and 

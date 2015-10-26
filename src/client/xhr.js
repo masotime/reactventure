@@ -15,10 +15,60 @@
 // * next is really just dispatch, but to the next middleware
 // * action is... the action that is passed to me either from
 //   the top or the previous middleware
+
+/* global fetch */
+import es6promise from 'es6-promise';
+import 'whatwg-fetch';
+import { applyState } from '../redux/actions';
+
+es6promise.polyfill();
+
 export default store => next => action => {
 
-	if (action.url) {
+	// basically this is a middleware that executes xhr
+	// requests and dispatches the response from
+	// the server when it finally comes back.
 
+	// TODO: timeouts, and error handling from the server
+	if (action.type === 'ROUTE') {
+		// start by initiating - we will define an attribute "state" that
+		// represents the state of the "request" - 'pending', 'success', 'error'
+		// TODO: Make an immutable clone
+		action.state = 'pending';
+		next(action);
+
+		// we need to prepare a payload for the fetch.
+		// seriously annoying.
+		let payload = {
+			method: action.method || 'GET',
+			headers: { // this is even more irritating. fetch is not considered an XHR wtf.
+				'Accept': 'application/json',
+				'Content-Type': 'application/json',
+				'X-Requested-With': 'XMLHttpRequest' // this guarantees req.xhr === true server-side
+			}
+		};
+
+		if (!/^(GET|POST)$/.test(payload.method)) {
+			// the body must be some weird Form object or a string. It cannot be a JSON object wtf.
+			payload.body = JSON.stringify(action);
+		}
+
+		return fetch(action.url, payload).then(function(res) {
+			if (res.status >= 400) {
+				const errorAction = applyState('error', { message: `Status ${res.status}` })(action);
+				return next(errorAction);
+			}
+
+			// TODO: do checks before dispatching
+			res.json().then(next); // ugh all these irritating promises
+		});
+	}
+
+	// not a ROUTE, passthrough
+	return next(action);
+
+	/*
+	if (action.url) {
 		// start by initiating - we will define an attribute "state" that
 		// represents the state of the "request" - 'pending', 'success', 'error'
 		action.state = 'pending';
@@ -50,4 +100,5 @@ export default store => next => action => {
 		// passthrough, not a "url" action
 		return next(action);
 	}
+	*/
 };

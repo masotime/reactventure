@@ -2,6 +2,9 @@ import React from 'react';
 import { Users, Messages, Medias, Posts } from './crud/list';
 import { connect } from 'react-redux';
 
+// this is for creating actions
+import { POST } from './redux/actions';
+
 const Dashboard = React.createClass({
 	render() {
 		return (
@@ -27,15 +30,17 @@ const About = React.createClass({
 const UserButtons = React.createClass({
 	login(user) {
 		const { dispatch } = this.props;
-		const action = { type: 'ROUTE', url: '/login', payload: { name: user.username, password: '' }, user: user.id };
-		console.log(action);
-		return () => dispatch(action);
+		const action = POST('/login')({ name: user.username, password: '' });
+		return () => {
+			console.log('Going to dispatch', action);
+			dispatch(action)
+		};
 	},
 
 	render() {
 		const props = this.props;
 		const handlers = {
-			login: this.login.bind(this) // ugh...
+			login: this.login // .bind(this) // ugh...
 		};
 
 		return (<ul>

@@ -13,9 +13,9 @@ const hydrateSession = (req) => {
 
 // we prepare a store creation function with a reducer and server-side specific middleware
 import reducer from './redux/reducers'; // this adds the univesal reducers
-import controller from './server/controller'; // this adds a server-side specific "data fetcher"
+// import controller from './server/controller'; // this adds a server-side specific "data fetcher"
 import storeMaker from './redux/store'; // lol... i need to refactor this
-const getStore = storeMaker(reducer, controller);
+const getStore = storeMaker(reducer); // no controllers
 
 console.log(`Server initializing...`);
 
@@ -49,13 +49,33 @@ app.use(basicRoutes);
 app.use(securedRoutes);
 app.use(authRoutes);
 
-// we delegate rendering to a universal react catchall
+// we first have a delegate that catches all xhr requests
+// if it is an xhr, we simply return a JSON and let the client side
+// handle the rendering
+app.use('/*', (req, res, next) => {
+	console.log('Now in ajax detecting middleware');
+	if (req.xhr && res.action) {
+		console.log('xhr request detected and intercepted as res.action = %s', res.action);
+		res.json(res.action);
+	} else {
+		return next();
+	}
+});
+
+// otherwise, we dispatch the action to the store and
+// perform the rendering server side
 app.use('/*', (req, res) => {
 
 	// NOTE: I may not want to use session / state if I can avoid it
 	// TODO: More thinking needed.
 	hydrateSession(req);
 	const store = getStore(req.session.state);
+
+	// if an upstream express route has appended a res.action
+	// dispatch it to the store before rendering.
+	if (res.action) {
+		store.dispatch(res.action);
+	}
 
 	// DON'T USE req.url, it's part of http not express
 	render({ routes: routesFactory(store), location: req.originalUrl, store}, (err, result) => {

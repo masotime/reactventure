@@ -25,7 +25,7 @@ const reducer = (state = blank, action) => {
 			auth.loggingIn = false;
 			switch (action.state) {
 				case 'pending': auth.loggingIn = true; break;
-				case 'success': auth.user = action.user; auth.loggedIn = true; break;
+				case 'success': auth.user = action.body.name; auth.loggedIn = true; break;
 				case 'failure': auth.error = action.error; break;
 			}
 			break;

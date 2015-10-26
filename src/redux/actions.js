@@ -2,7 +2,7 @@
 import cloneDeep from 'lodash/lang/cloneDeep';
 
 // action creators go here
-const routeAction = (url, method, body) => (body = {
+const routeAction = (url, method) => body => ({
 	type: 'ROUTE',
 	url: url,
 	method: method,
@@ -31,5 +31,7 @@ const applyState = (state, error) => action => {
 
 export default {
 	routeAction,
+	GET: url => routeAction(url, 'GET'),
+	POST: url => routeAction(url, 'POST'),
 	applyState
 };
