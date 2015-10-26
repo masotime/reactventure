@@ -58,7 +58,7 @@ const authRoutes = ((router, auth, generate) => {
 
 	// this route does the actual login stuff
 	router.post('/login', (req, res, next) => {
-		const action = POST('/login')(req.body);
+		const action = POST('/login')(req.body.body); // this is really REALLY irritating
 		const id = auth(action.body.name, action.body.password);
 		if (id) {
 			// generate a JSON action response

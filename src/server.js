@@ -53,9 +53,8 @@ app.use(authRoutes);
 // if it is an xhr, we simply return a JSON and let the client side
 // handle the rendering
 app.use('/*', (req, res, next) => {
-	console.log('Now in ajax detecting middleware');
 	if (req.xhr && res.action) {
-		console.log('xhr request detected and intercepted as res.action = %s', res.action);
+		console.log('xhr request detected. server responds with res.action =', res.action);
 		res.json(res.action);
 	} else {
 		return next();

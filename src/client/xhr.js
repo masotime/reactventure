@@ -48,7 +48,7 @@ export default store => next => action => {
 			}
 		};
 
-		if (!/^(GET|POST)$/.test(payload.method)) {
+		if (!/^(GET|HEAD)$/.test(payload.method)) {
 			// the body must be some weird Form object or a string. It cannot be a JSON object wtf.
 			payload.body = JSON.stringify(action);
 		}
