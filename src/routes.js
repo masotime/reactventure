@@ -40,7 +40,6 @@ export default store => {
 		<Route path="posts" component={PostsPage} onEnter={requireAuth} />
 	</Route>);
 
-
 }
 
 // KIV this stuff

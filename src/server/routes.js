@@ -1,5 +1,11 @@
 // place to store express routes
 import { Router } from 'express';
+import { POST, GET, applyState } from '../redux/actions';
+import { users } from '../lib/service';
+
+const makeGET = req => {
+	return GET(req.originalUrl)(req.body.body);
+}
 
 // these are basic routes, without security
 const basicRoutes = ((router) => {
@@ -8,13 +14,39 @@ const basicRoutes = ((router) => {
 		next();
 	});
 
+	router.get('/dashboard', (req, res, next) => {
+		console.log('dashboard page');
+
+		// noop
+		res.action = applyState('success')(makeGET(req));
+		next();
+	});
+
 	router.get('/about', (req, res, next) => {
 		console.log('About page');
+
+		const action = makeGET(req);
+		action.body = {
+			content : {
+				header: 'About BenBook',
+				body: 'This is an experimental web project used to figure out how to achieve _nirvana_... a _truly_ universal application.'
+			}
+		};
+
+		res.action = applyState('success')(action);
 		next();
 	});
 
 	router.get('/login', (req, res, next) => {
 		console.log('Login page');
+
+		// load users to login with
+		// TODO: EXPERIMENTATION ONLY, REMOVE LATER
+		const action = makeGET(req);
+		action.body = { users : users() };
+
+		res.action = applyState('success')(action);
+
 		next();
 	});
 
@@ -53,7 +85,6 @@ const securedRoutes = ((router, authMiddleware) => {
 // these are authentication routes
 // see https://auth0.com/blog/2015/09/28/5-steps-to-add-modern-authentication-to-legacy-apps-using-jwts/
 import { auth, generate } from '../lib/jwt';
-import { POST, GET, applyState } from '../redux/actions';
 const authRoutes = ((router, auth, generate) => {
 
 	// this route does the actual login stuff

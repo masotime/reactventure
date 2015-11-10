@@ -5,9 +5,8 @@ import { html_beautify } from 'js-beautify';
 
 // everything redux related
 import reducer from './redux/reducers'; // this adds the univesal reducers
-import controller from './server/controller'; // this adds a server-side specific "data fetcher"
 import storeMaker from './redux/store'; // lol... i need to refactor this
-const getStore = storeMaker(reducer, controller);
+const getStore = storeMaker(reducer);
 
 import getDb from './lib/db';
 export default function browse(url) {

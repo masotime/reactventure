@@ -4,10 +4,12 @@ import render from './server/render';
 import ignite from './lib/ignite'; // this adds webpack hot loading
 
 // database hydration code - REFACTOR
-import getDb from './lib/db';
+import { auth } from './lib/service';
 const hydrateSession = (req) => {
 	if (req && req.session) {
-		req.session.state = getDb();
+		// we ONLY hydrate the authenication information
+		// the rest _must_ be hydrated via actions.
+		req.session.state = { auth: auth() };
 	}
 }
 

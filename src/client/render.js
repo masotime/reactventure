@@ -15,11 +15,7 @@ const reduxify = (component, store) => {
 	};
 }
 
-// the history nonsense is a pain
-import { createHistory } from 'react-router/node_modules/history';
-const history = createHistory(); // so this will be a client-side history
-
-export default function render({ routes, location, store }, cb) {
+export default function render({ routes, history, store }, cb) {
 
 	// prepare
 	const reduxified = reduxify(<Router history={history}>{routes}</Router>, store); // in contrast to <RoutingContext> server-side

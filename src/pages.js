@@ -9,7 +9,7 @@ const Dashboard = React.createClass({
 	render() {
 		return (
 			<div>
-				<h1>This dashboard has been updated to <code>react@0.14</code> and <code>react-router@1.0.0-rc3</code></h1>
+				<h1>This dashboard has been updated to <code>react@0.14.2</code> and <code>react-router@1.0.0-rc4</code></h1>
 				<p>Stats on the various entities should go here.</p>
 			</div>
 		);
@@ -18,10 +18,11 @@ const Dashboard = React.createClass({
 
 const About = React.createClass({
 	render() {
+		const props = this.props;
 		return (
 			<div>
-				<h2>This is an about!</h2>
-				<p>About meeeeee....!!!!</p>
+				<h2>{props.content.header}</h2>
+				<p>{props.content.body}</p>
 			</div>
 		);
 	}
@@ -92,11 +93,19 @@ const connected = (component, property) => {
 	return connector(component);
 };
 
+const contentified = (component) => {
+	return connect(state => ({content: state.content}))(component);
+}
+
 const [ UsersPage, MessagesPage, MediasPage, PostsPage ] = [ 
 	connected(pageOf('Users', Users), 'users'),
 	connected(pageOf('Messages', Messages), 'messages'),
 	connected(pageOf('Medias', Medias), 'medias'),
 	connected(pageOf('Posts', Posts), 'posts')
+];
+
+const [ AboutPage ] = [
+	contentified(About)
 ];
 
 /* KIV for reference */
@@ -123,7 +132,7 @@ const Inbox = React.createClass({
 */
 
 export default { 
-	About, Dashboard, // public pages
+	About: AboutPage, Dashboard, // public pages
 	Login: connect(state => ({users: state.users}))(Login), Logout, // auth related
 	UsersPage, MessagesPage, MediasPage, PostsPage // protected pages
 };
