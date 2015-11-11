@@ -1,7 +1,7 @@
 // place to store express routes
 import { Router } from 'express';
 import { POST, GET, applyState } from '../redux/actions';
-import { users } from '../lib/service';
+import { users, posts, medias, messages } from '../lib/service';
 
 const makeGET = req => {
 	return GET(req.originalUrl)(req.body.body);
@@ -59,22 +59,41 @@ import { authMiddleware } from '../lib/jwt';
 const securedRoutes = ((router, authMiddleware) => {
 
 	router.get('/users', authMiddleware, (req, res, next) => {
-		console.log('Users page');
+		console.log('Load users');
+		const action = makeGET(req);
+		action.body = { users: users() };
+
+		res.action = applyState('success')(action);
 		next();
 	});
 
 	router.get('/posts', authMiddleware, (req, res, next) => {
-		console.log('Posts page');
+		console.log('Load posts');
+		const action = makeGET(req);
+		action.body = { posts: posts() };
+
+		res.action = applyState('success')(action);
 		next();
 	});
 
 	router.get('/media', authMiddleware, (req, res, next) => {
+		console.log('Load medias');
+		const action = makeGET(req);
+		action.body = { medias: medias() };
+
+		res.action = applyState('success')(action);
+
 		console.log('Media page');
 		next();
 	});
 
 	router.get('/messages', authMiddleware, (req, res, next) => {
-		console.log('Messages page');
+		console.log('Load messages');
+		const action = makeGET(req);
+		action.body = { messages: messages() };
+
+		res.action = applyState('success')(action);
+
 		next();
 	});
 

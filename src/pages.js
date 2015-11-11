@@ -44,9 +44,13 @@ const UserButtons = React.createClass({
 			login: this.login // .bind(this) // ugh...
 		};
 
-		return (<ul>
-			{props.users.map(user => <li key={user.id}><button onClick={handlers.login(user)}type="button">{user.username}</button></li> )}
-		</ul>);
+		if (props.users) {
+			return (<ul>
+				{props.users.map(user => <li key={user.id}><button onClick={handlers.login(user)}type="button">{user.username}</button></li> )}
+			</ul>);
+		} else {
+			return (<p>No users</p>);
+		}
 	}
 });
 
@@ -73,10 +77,15 @@ const pageOf = (title, ListComponent) => {
 	return React.createClass({
 		render() {
 			const props = this.props;
-			return (<div>
-				<h1>List of {title}</h1>
-				<ListComponent page={props.page} />
-			</div>);
+
+			if (props.page) {
+				return (<div>
+					<h1>List of {title}</h1>
+					<ListComponent page={props.page} />
+				</div>);
+			} else {
+				return (<p>There are no {title} to display</p>);
+			}
 		}
 	});
 };
