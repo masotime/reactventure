@@ -42,12 +42,16 @@ const reducer = (state = blank, action) => {
 				newState.users = action.body.users;
 				break;
 
+			case '/posts': newState.posts = action.body.posts; break;
+			case '/medias': newState.medias = action.body.medias; break;
+			case '/messages': newState.messages = action.body.messages; break;
+
 			// TODO: how does this work in a universal context?
 			case '/logout': 
 				auth.loggingIn = false;
 				switch (action.state) {
 					case 'pending': auth.loggingIn = true; break; // this doesn't make sense
-					case 'success': auth.user = undefined; auth.loggedIn = false; break;
+					case 'success': delete auth.token; auth.user = undefined; auth.loggedIn = false; break;
 					case 'failure': auth.error = action.error; break;
 				}
 				break;
@@ -63,7 +67,11 @@ const reducer = (state = blank, action) => {
 
 				switch (action.state) {
 					case 'pending': auth.loggingIn = true; break;
-					case 'success': auth.user = action.body.name; auth.loggedIn = true; break;
+					case 'success': 
+						auth.token = action.body.token;
+						auth.user = action.body.name;
+						auth.loggedIn = true;
+						break;
 					case 'failure': auth.error = action.error; break;
 				}
 				break;

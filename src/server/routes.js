@@ -55,7 +55,7 @@ const basicRoutes = ((router) => {
 })(Router());
 
 // these are secured routes
-import { authMiddleware } from '../lib/jwt';
+import { authActionMiddleware } from '../lib/jwt';
 const securedRoutes = ((router, authMiddleware) => {
 
 	router.get('/users', authMiddleware, (req, res, next) => {
@@ -99,7 +99,7 @@ const securedRoutes = ((router, authMiddleware) => {
 
 	return router;
 
-})(Router(), authMiddleware);
+})(Router(), authActionMiddleware);
 
 // these are authentication routes
 // see https://auth0.com/blog/2015/09/28/5-steps-to-add-modern-authentication-to-legacy-apps-using-jwts/

@@ -48,6 +48,14 @@ export default store => next => action => {
 			}
 		};
 
+		// we deal with JWT authentication. I don't like all this boilerplate in here though
+		// TODO: Find a way to refactor
+		const state = store.getState();
+		if (state.auth && state.auth.token) {
+			payload.headers.Authorization = 'Bearer ' + state.auth.token;
+		}
+
+
 		if (!/^(GET|HEAD)$/.test(payload.method)) {
 			// the body must be some weird Form object or a string. It cannot be a JSON object wtf.
 			payload.body = JSON.stringify(action);

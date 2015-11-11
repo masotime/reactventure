@@ -7,6 +7,8 @@ import jwt from 'jsonwebtoken';
 import keys from './keys';
 import { find } from 'lodash';
 
+// Don't want to use this for now
+/*
 const authMiddleware = jwtExpress({
 	secret: new Buffer(keys.CLIENT_SECRET, 'base64'),
 	audience: keys.CLIENT_ID,
@@ -22,6 +24,19 @@ const authMiddleware = jwtExpress({
 		return null;
 	}
 });
+*/
+
+// we'll leave the cookie alternative here
+const getToken = req => {
+	const hasAuthorizationHeader = !!req.headers.authorization;
+	const headerParts = hasAuthorizationHeader && req.headers.authorization.split(' ');
+	if (hasAuthorizationHeader && headerParts[0] === 'Bearer') {
+		return headerParts[1];
+	} else {
+		return req.cookies.id_token;
+	}
+	return null;
+}
 
 const generate = (payload) => {
 	return jwt.sign(payload, keys.CLIENT_SECRET, {
@@ -32,19 +47,49 @@ const generate = (payload) => {
 	});
 }
 
+import { users } from './service';
+const checkToken = (token) => {
+	// prove (or otherwise) that the token contains
+	// an encrypted version of the specified user,
+	// and that said user exists in the database
+	let decoded;
+	try {
+		decoded = jwt.verify(token, keys.CLIENT_SECRET);
+	} catch (e) {
+		return false;
+	}
+
+	// once decoded, we ASSUME (TODO!) that it has a user_id property
+	return find(users(), { id: decoded.user_id });
+}
+
+const authActionMiddleware = (req, res, next) => {
+	const token = getToken(req);
+	console.log(`Verifying ${token}`);
+
+	const authenticatedUser = checkToken(token);
+
+	if (authenticatedUser) {
+		console.log(`Successfully verified user ${authenticatedUser.username}`);
+		next();
+	} else {
+		console.log(`Authentication failed, redirecting to /login`);
+		res.redirect('/login');
+	}
+}
+
+
 // synchronous? asynchronous? to A or not to A.
-import getDb from './db';
 const auth = (user, password) => {
 	// we ignore the password
 	console.log(`auth on ${user} / ${password} auto-success`);
 
 	// returns the id of the user
 	// i should have used a proper db. this is messy
-	const db = getDb();
-	const userObj = find(db.users, { username: user });
+	const userObj = find(users(), { username: user });
 	return userObj && userObj.id;
 }
 
 export default {
-	authMiddleware, generate, auth
+	authActionMiddleware, checkToken, generate, auth
 };
