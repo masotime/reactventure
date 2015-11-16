@@ -20,6 +20,33 @@ const reducer = (state = blank, action) => {
 	const { auth } = newState;
 
 	console.log('got an action',action);
+
+	// we track the "freshness" of the retrieved data
+	if (action.method === 'GET') { // TODO: may not always be a GET
+		const freshness = newState.freshness = newState.freshness || {};
+		const url = action.url;
+		const timestamp = (new Date()).getTime();
+		freshness[url] = freshness[url] || {};
+
+		switch (action.state) {
+			case 'pending':
+				console.log(`setting freshness[${url}] to pending`);
+				freshness[url].state = 'pending';
+				break;
+
+			case 'failure': 
+				console.log(`setting freshness[${url}] to failure`);
+				freshness[url].state = 'failure';
+				freshness[url].timestamp = timestamp;
+				break; // what do i do?
+
+			case 'success': 
+				console.log(`setting freshness[${url}] to success`);
+				freshness[url].state = 'success';
+				freshness[url].timestamp = timestamp;
+				break;
+		}
+	}
 	
 	// depending on the method, we deal with it differently
 	if (action.method === 'GET') {

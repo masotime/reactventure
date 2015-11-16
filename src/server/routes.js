@@ -54,17 +54,25 @@ const basicRoutes = ((router) => {
 	return router;
 })(Router());
 
+// fake slow load times
+const fakeLoad = ({res, action, next, delay}) => {
+	setTimeout( () => {
+		res.action = applyState('success')(action);
+		next();
+	}, delay);
+}
 // these are secured routes
 import { authActionMiddleware } from '../lib/jwt';
 const securedRoutes = ((router, authMiddleware) => {
+
+	const delay = 5000;
 
 	router.get('/users', authMiddleware, (req, res, next) => {
 		console.log('Load users');
 		const action = makeGET(req);
 		action.body = { users: users() };
 
-		res.action = applyState('success')(action);
-		next();
+		fakeLoad({ res, action, next, delay});
 	});
 
 	router.get('/posts', authMiddleware, (req, res, next) => {
@@ -72,19 +80,15 @@ const securedRoutes = ((router, authMiddleware) => {
 		const action = makeGET(req);
 		action.body = { posts: posts() };
 
-		res.action = applyState('success')(action);
-		next();
+		fakeLoad({ res, action, next, delay});
 	});
 
-	router.get('/media', authMiddleware, (req, res, next) => {
+	router.get('/medias', authMiddleware, (req, res, next) => {
 		console.log('Load medias');
 		const action = makeGET(req);
 		action.body = { medias: medias() };
 
-		res.action = applyState('success')(action);
-
-		console.log('Media page');
-		next();
+		fakeLoad({ res, action, next, delay});
 	});
 
 	router.get('/messages', authMiddleware, (req, res, next) => {
@@ -92,9 +96,7 @@ const securedRoutes = ((router, authMiddleware) => {
 		const action = makeGET(req);
 		action.body = { messages: messages() };
 
-		res.action = applyState('success')(action);
-
-		next();
+		fakeLoad({ res, action, next, delay});
 	});
 
 	return router;

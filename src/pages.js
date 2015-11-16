@@ -106,11 +106,12 @@ const contentified = (component) => {
 	return connect(state => ({content: state.content}))(component);
 }
 
+import weitify from './weitify';
 const [ UsersPage, MessagesPage, MediasPage, PostsPage ] = [ 
-	connected(pageOf('Users', Users), 'users'),
-	connected(pageOf('Messages', Messages), 'messages'),
-	connected(pageOf('Medias', Medias), 'medias'),
-	connected(pageOf('Posts', Posts), 'posts')
+	weitify(connected(pageOf('Users', Users), 'users')),
+	weitify(connected(pageOf('Messages', Messages), 'messages')),
+	weitify(connected(pageOf('Medias', Medias), 'medias')),
+	weitify(connected(pageOf('Posts', Posts), 'posts'))
 ];
 
 const [ AboutPage ] = [
