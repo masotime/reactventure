@@ -26,16 +26,43 @@ const authMiddleware = jwtExpress({
 });
 */
 
+const COOKIE_KEY = 'id_token';
+
 // we'll leave the cookie alternative here
 const getToken = req => {
 	const hasAuthorizationHeader = !!req.headers.authorization;
 	const headerParts = hasAuthorizationHeader && req.headers.authorization.split(' ');
 	if (hasAuthorizationHeader && headerParts[0] === 'Bearer') {
+		console.log('Using token from authorization header');
 		return headerParts[1];
 	} else {
-		return req.cookies.id_token;
+		console.log('Using token from cookie');
+		return req.cookies[COOKIE_KEY];
 	}
 	return null;
+}
+
+// in the event that an action is authorized, but the
+// origin of the authorization is via a cookie rather than
+// the header, we augment the action with auth data
+// so that the client will now be able to store the token
+const maybeAddAuth = (
+	req = { headers: {}, cookies: {}, body: {} },
+	user_id = ''
+) => {
+	const action = req.body;
+	if (!req.headers.authorization && req.cookies.id_token) {
+		console.log(`adding token to action since it didn\'t have it`);
+		action.body.token = generate({ user_id });
+	}
+}
+
+// this is a convenience function that will add a response cookie
+// note that it doesn't enforce the secure flag, so the cookie
+// can still be sent over HTTP (an obvious security issue)
+const addTokenCookie = (res, payload) => {
+	const token = generate(payload);
+	res.cookie(COOKIE_KEY, token, { httpOnly: true });
 }
 
 const generate = (payload) => {
@@ -71,6 +98,7 @@ const authActionMiddleware = (req, res, next) => {
 
 	if (authenticatedUser) {
 		console.log(`Successfully verified user ${authenticatedUser.username}`);
+		maybeAddAuth(req, authenticatedUser.id);
 		next();
 	} else {
 		console.log(`Authentication failed, redirecting to /login`);
@@ -91,5 +119,5 @@ const auth = (user, password) => {
 }
 
 export default {
-	authActionMiddleware, checkToken, generate, auth
+	authActionMiddleware, addTokenCookie, checkToken, generate, auth
 };

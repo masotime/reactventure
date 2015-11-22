@@ -18,7 +18,7 @@
 
 /* global fetch */
 import es6promise from 'es6-promise';
-import 'whatwg-fetch';
+import 'isomorphic-fetch';
 import { applyState } from '../redux/actions';
 
 es6promise.polyfill();

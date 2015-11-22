@@ -105,7 +105,7 @@ const securedRoutes = ((router, authMiddleware) => {
 
 // these are authentication routes
 // see https://auth0.com/blog/2015/09/28/5-steps-to-add-modern-authentication-to-legacy-apps-using-jwts/
-import { auth, generate } from '../lib/jwt';
+import { auth, generate, addTokenCookie } from '../lib/jwt';
 const authRoutes = ((router, auth, generate) => {
 
 	// this route does the actual login stuff
@@ -116,6 +116,7 @@ const authRoutes = ((router, auth, generate) => {
 			// generate a JSON action response
 			action.body.token = generate({ user_id: id });
 			res.action = applyState('success')(action);
+			addTokenCookie(res, action.body.token); // add it to the client cookie as well, HTTP Only
 		} else {
 			// respond with an action
 			res.action = applyState('error', { 
