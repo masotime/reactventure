@@ -65,7 +65,7 @@ const fakeLoad = ({res, action, next, delay}) => {
 import { authActionMiddleware } from '../lib/jwt';
 const securedRoutes = ((router, authMiddleware) => {
 
-	const delay = 5000;
+	const delay = 1000;
 
 	router.get('/users', authMiddleware, (req, res, next) => {
 		console.log('Load users');
@@ -116,7 +116,7 @@ const authRoutes = ((router, auth, generate) => {
 			// generate a JSON action response
 			action.body.token = generate({ user_id: id });
 			res.action = applyState('success')(action);
-			addTokenCookie(res, action.body.token); // add it to the client cookie as well, HTTP Only
+			addTokenCookie(res, { user_id: id }); // add it to the client cookie as well, HTTP Only
 		} else {
 			// respond with an action
 			res.action = applyState('error', { 

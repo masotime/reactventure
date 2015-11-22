@@ -45,7 +45,8 @@ export default store => next => action => {
 				'Accept': 'application/json',
 				'Content-Type': 'application/json',
 				'X-Requested-With': 'XMLHttpRequest' // this guarantees req.xhr === true server-side
-			}
+			},
+			credentials: 'same-origin' // for cookies to be sent in the headers
 		};
 
 		// we deal with JWT authentication. I don't like all this boilerplate in here though

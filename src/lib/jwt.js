@@ -52,8 +52,11 @@ const maybeAddAuth = (
 ) => {
 	const action = req.body;
 	if (!req.headers.authorization && req.cookies.id_token) {
-		console.log(`adding token to action since it didn\'t have it`);
-		action.body.token = generate({ user_id });
+		// TODO: This doesn't make any sense at all. Better to pass in an action.
+		if (action && action.body) {
+			console.log(`adding token to action since it didn\'t have it`);
+			action.body.token = generate({ user_id });
+		}
 	}
 }
 
