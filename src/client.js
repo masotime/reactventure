@@ -36,6 +36,7 @@ history.listen(location => {
 	if (initialLoad) {
 		initialLoad = false;
 	} else {
+		// TODO: this doesn't check authorization first, making a wasted trip on the server-side
 		store.dispatch(GET(route)({})); // params....?
 	}
 });

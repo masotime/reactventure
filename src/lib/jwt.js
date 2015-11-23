@@ -45,31 +45,42 @@ const getToken = req => {
 	return null;
 }
 
-// in the event that an action is authorized, but the
-// origin of the authorization is via a cookie rather than
-// the header, we augment the action with auth data
-// so that the client will now be able to store the token
-const maybeAddAuth = (
-	req = { headers: {}, cookies: {}, body: {} },
-	user = {}
-) => {
-	// TODO: I have grave doubts about inferring the presence
-	// of an action in the request.
-	if (!req.body) {
-		req.body = {};
+// if an action doesn't have auth header information, but
+// cookies do,
+// 1. verify that the cookie's claims are correc
+// 2. transfer that information into the action's headers
+//
+// this will allow the reducers to add this information to
+// the store, server side (via server-actions) and client-side
+// (via state hydration)
+//
+// in addition, this is consistent with the client-side logic of always
+// including the Authorization Bearer request header if the user is logged in
+// which it can only do if the client-side state is hydrated with auth information
+const maybeAddAuth = (req, action = {}) => {
+	const token = getToken(req);
+
+	if (token) {
+		const user = checkToken(token);
+
+		if (user) {
+			console.log(`adding auth information to action headers`);
+			action.headers = action.headers || {};
+			action.headers.token = generate({ user_id: user.id });
+			action.headers.name = user.username;
+		}
 	}
 
-	if (!req.body.headers) {
-		req.body.headers = {};
-	}
+	return action;
+}
 
-	const action = req.body;
-
-	if (!req.headers.authorization && req.cookies[COOKIE_KEY]) {
-		console.log(`adding auth information to action headers`);
-		action.headers.token = generate({ user_id: user.id });
-		action.headers.name = user.username;
+const logout = (res, action) => {
+	res.clearCookie(COOKIE_KEY);
+	if (action && action.headers) {
+		delete action.headers.token;
+		delete action.headers.user;
 	}
+	return action;
 }
 
 // this is a convenience function that will add a response cookie
@@ -134,5 +145,5 @@ const auth = (user, password) => {
 }
 
 export default {
-	authActionMiddleware, addTokenCookie, checkToken, generate, auth
+	authActionMiddleware, addTokenCookie, maybeAddAuth, logout, checkToken, generate, auth
 };

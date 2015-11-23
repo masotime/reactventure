@@ -1,9 +1,7 @@
 // place to store express routes
 import { Router } from 'express';
-import { POST, GET, applyState } from '../redux/actions';
+import { applyState } from '../redux/actions';
 import { users, posts, medias, messages } from '../lib/service';
-
-const makeGET = req => GET(req.originalUrl)(req.body.body, req.body.headers)
 
 // these are basic routes, without security
 const basicRoutes = ((router) => {
@@ -13,38 +11,28 @@ const basicRoutes = ((router) => {
 	});
 
 	router.get('/dashboard', (req, res, next) => {
-		console.log('dashboard page');
-
 		// noop
-		res.action = applyState('success')(makeGET(req));
+		res.action = applyState('success')(req.action);
 		next();
 	});
 
 	router.get('/about', (req, res, next) => {
-		console.log('About page');
-
-		const action = makeGET(req);
-		action.body = {
+		req.action.body = {
 			content : {
 				header: 'About BenBook',
 				body: 'This is an experimental web project used to figure out how to achieve _nirvana_... a _truly_ universal application.'
 			}
 		};
 
-		res.action = applyState('success')(action);
+		res.action = applyState('success')(req.action);
 		next();
 	});
 
 	router.get('/login', (req, res, next) => {
-		console.log('Login page');
-
 		// load users to login with
-		// TODO: EXPERIMENTATION ONLY, REMOVE LATER
-		const action = makeGET(req);
-		action.body = { users : users() };
-
-		res.action = applyState('success')(action);
-
+		// TODO: USERS DUMP, EXPERIMENTATION ONLY, REMOVE LATER
+		req.action.body = { users : users() };
+		res.action = applyState('success')(req.action);
 		next();
 	});
 
@@ -60,6 +48,7 @@ const fakeLoad = ({res, action, next, delay}) => {
 		next();
 	}, delay);
 }
+
 // these are secured routes
 import { authActionMiddleware } from '../lib/jwt';
 const securedRoutes = ((router, authMiddleware) => {
@@ -68,34 +57,30 @@ const securedRoutes = ((router, authMiddleware) => {
 
 	router.get('/users', authMiddleware, (req, res, next) => {
 		console.log('Load users');
-		const action = makeGET(req);
-		action.body = { users: users() };
+		req.action.body = { users: users() };
 
-		fakeLoad({ res, action, next, delay});
+		fakeLoad({ res, action: req.action, next, delay});
 	});
 
 	router.get('/posts', authMiddleware, (req, res, next) => {
 		console.log('Load posts');
-		const action = makeGET(req);
-		action.body = { posts: posts() };
+		req.action.body = { posts: posts() };
 
-		fakeLoad({ res, action, next, delay});
+		fakeLoad({ res, action: req.action, next, delay});
 	});
 
 	router.get('/medias', authMiddleware, (req, res, next) => {
 		console.log('Load medias');
-		const action = makeGET(req);
-		action.body = { medias: medias() };
+		req.action.body = { medias: medias() };
 
-		fakeLoad({ res, action, next, delay});
+		fakeLoad({ res, action: req.action, next, delay});
 	});
 
 	router.get('/messages', authMiddleware, (req, res, next) => {
 		console.log('Load messages');
-		const action = makeGET(req);
-		action.body = { messages: messages() };
+		req.action.body = { messages: messages() };
 
-		fakeLoad({ res, action, next, delay});
+		fakeLoad({ res, action: req.action, next, delay});
 	});
 
 	return router;
@@ -104,12 +89,12 @@ const securedRoutes = ((router, authMiddleware) => {
 
 // these are authentication routes
 // see https://auth0.com/blog/2015/09/28/5-steps-to-add-modern-authentication-to-legacy-apps-using-jwts/
-import { auth, generate, addTokenCookie } from '../lib/jwt';
+import { auth, generate, addTokenCookie, logout } from '../lib/jwt';
 const authRoutes = ((router, auth, generate) => {
 
 	// this route does the actual login stuff
 	router.post('/login', (req, res, next) => {
-		const action = POST('/login')(req.body.body); // this is really REALLY irritating
+		const action = req.action;
 		const user = auth(action.body.name, action.body.password);
 		if (user) {
 			// generate a JSON action response
@@ -131,7 +116,10 @@ const authRoutes = ((router, auth, generate) => {
 	});
 
 	router.get('/logout', (req, res, next) => {
-		const action = GET('/logout')({}); // GET has no body. params?
+		// remove auth information from client-side (action.headers)
+		// as well as server-side (cookies).
+		const action = logout(res, req.action);
+
 		res.action = applyState('success')(action);
 		next();
 	});

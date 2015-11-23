@@ -26,6 +26,41 @@ app.use(bodyParser.text());
 // we serve static files (really just the webpack bundle)
 app.use(express.static('build/public'));
 
+// for any request, we either force the creation of an action or
+// we augment the existing one with auth information (if it is present
+// in the cookie but not included)
+//
+// once done, we define a req.action which express routes will use to
+// do further processing.
+//
+import { maybeAddAuth } from './lib/jwt';
+import { routeAction } from './redux/actions';
+app.use('/*', (req, res, next) => {
+	// base action, with empty body and headers
+	let action = routeAction(req.originalUrl, req.method)({}, {});
+
+	// augment action if it already exists
+	if (req.body && req.body.type === 'ROUTE') {
+		action = req.body;
+		action.body = action.body || {};
+		action.headers = action.headers || {};
+
+		// we force the originalUrl and method to match the actual type of the request
+		// to prevent CSRF bypassing a POST etc.
+		action.url = req.originalUrl;
+		action.method = req.method;
+	}
+
+	action = maybeAddAuth(req, action);
+
+	req.action = action;
+
+	console.log(`[server-side] Action ${action.method} ${action.url}`);
+	console.log(`[server-side] ${action.body}`);
+
+	next();
+});
+
 // we apply express routes
 import { basicRoutes, securedRoutes, authRoutes } from './server/routes';
 app.use(basicRoutes);
