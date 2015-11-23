@@ -28,6 +28,7 @@ const getFreshness = (props = { freshness: {} }, pathname = '') => {
 // mapping pathnames to an object containing
 // * .state - "pending" / "success" / "failure"
 // * .timestamp
+// TODO: Customized weitification?
 const weitify = AsyncRoute => {
 
 	return connect( 

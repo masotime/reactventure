@@ -3,12 +3,8 @@ import routesFactory from './routes';
 import render from './server/render';
 import ignite from './lib/ignite'; // this adds webpack hot loading
 
-// database hydration code - REFACTOR
-import { auth } from './lib/service';
-
 // we prepare a store creation function with a reducer and server-side specific middleware
 import reducer from './redux/reducers'; // this adds the univesal reducers
-// import controller from './server/controller'; // this adds a server-side specific "data fetcher"
 import storeMaker from './redux/store'; // lol... i need to refactor this
 const getStore = storeMaker(reducer); // no controllers
 
@@ -26,14 +22,6 @@ import bodyParser from 'body-parser';
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.text());
-
-// add session support
-import session from 'express-session';
-app.use(session({
-	resave: false,
-	saveUninitialized: false,
-	secret: 'pineapple'
-}));
 
 // we serve static files (really just the webpack bundle)
 app.use(express.static('build/public'));
@@ -65,12 +53,8 @@ app.use('/*', (req, res) => {
 	// if an upstream express route has appended a res.action
 	// dispatch it to the store before rendering.
 	if (res.action) {
-		console.log('Server-side rendering, dispatching action', res.action);
 		store.dispatch(res.action);
 	}
-
-	console.log('Server-side rendering, store state before routing is');
-	console.log(store.getState());
 
 	// DON'T USE req.url, it's part of http not express
 	render({ routes: routesFactory(store), location: req.originalUrl, store}, (err, result) => {
@@ -109,5 +93,5 @@ app.use(function handleErrors(err, req, res, next) {
 
 const server = app.listen(8000, () => {
 	const started = server.address();
-	console.log(`Example app listening at http:\/\/${started.address}:${started.port}`);
+	console.log(`Example app listening at http://${started.address}:${started.port}`);
 });

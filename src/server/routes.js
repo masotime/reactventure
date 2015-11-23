@@ -3,9 +3,7 @@ import { Router } from 'express';
 import { POST, GET, applyState } from '../redux/actions';
 import { users, posts, medias, messages } from '../lib/service';
 
-const makeGET = req => {
-	return GET(req.originalUrl)(req.body.body);
-}
+const makeGET = req => GET(req.originalUrl)(req.body.body, req.body.headers)
 
 // these are basic routes, without security
 const basicRoutes = ((router) => {
@@ -96,8 +94,6 @@ const securedRoutes = ((router, authMiddleware) => {
 		console.log('Load messages');
 		const action = makeGET(req);
 		action.body = { messages: messages() };
-
-		console.log('going to fakeload');
 
 		fakeLoad({ res, action, next, delay});
 	});

@@ -2,11 +2,8 @@
 import cloneDeep from 'lodash/lang/cloneDeep';
 
 // action creators go here
-const routeAction = (url, method) => body => ({
-	type: 'ROUTE',
-	url: url,
-	method: method,
-	body: body
+const routeAction = (url, method) => (body, headers = {}) => ({
+	type: 'ROUTE', url, method, body, headers
 });
 
 const applyState = (state, error) => action => {
