@@ -58,6 +58,7 @@ const basicRoutes = ((router) => {
 const fakeLoad = ({res, action, next, delay}) => {
 	setTimeout( () => {
 		res.action = applyState('success')(action);
+		console.log('fakeload complete');
 		next();
 	}, delay);
 }
@@ -96,6 +97,8 @@ const securedRoutes = ((router, authMiddleware) => {
 		const action = makeGET(req);
 		action.body = { messages: messages() };
 
+		console.log('going to fakeload');
+
 		fakeLoad({ res, action, next, delay});
 	});
 
@@ -111,12 +114,16 @@ const authRoutes = ((router, auth, generate) => {
 	// this route does the actual login stuff
 	router.post('/login', (req, res, next) => {
 		const action = POST('/login')(req.body.body); // this is really REALLY irritating
-		const id = auth(action.body.name, action.body.password);
-		if (id) {
+		const user = auth(action.body.name, action.body.password);
+		if (user) {
 			// generate a JSON action response
-			action.body.token = generate({ user_id: id });
+			// NOTE: we will use a "header" to prevent pollution of the action body
+			const payload = { user_id: user.id };
+			action.headers = action.headers || {};
+			action.headers.token = generate(payload);
+			action.headers.name = user.username;
 			res.action = applyState('success')(action);
-			addTokenCookie(res, { user_id: id }); // add it to the client cookie as well, HTTP Only
+			addTokenCookie(res, payload); // add it to the client cookie as well, HTTP Only
 		} else {
 			// respond with an action
 			res.action = applyState('error', { 

@@ -21,6 +21,16 @@ const reducer = (state = blank, action) => {
 
 	console.log('got an action',action);
 
+	// if any action contains .headers.token, then we transfer that information
+	// (token, username) into the state. This means we don't have to handle
+	// POST /login separately.
+	if (action && action.headers && action.headers.token) {
+		console.log('transferring auth information from action header to state');
+		auth.token = action.headers.token;
+		auth.user = action.headers.name;
+		auth.loggedIn = true;
+	}
+
 	// we track the "freshness" of the retrieved data
 	if (action.method === 'GET') { // TODO: may not always be a GET
 		const freshness = newState.freshness = newState.freshness || {};
@@ -92,13 +102,9 @@ const reducer = (state = blank, action) => {
 			case '/login': 
 				auth.loggingIn = false;
 
+				// success case applies for any route
 				switch (action.state) {
 					case 'pending': auth.loggingIn = true; break;
-					case 'success': 
-						auth.token = action.body.token;
-						auth.user = action.body.name;
-						auth.loggedIn = true;
-						break;
 					case 'failure': auth.error = action.error; break;
 				}
 				break;

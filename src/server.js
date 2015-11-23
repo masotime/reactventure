@@ -5,13 +5,6 @@ import ignite from './lib/ignite'; // this adds webpack hot loading
 
 // database hydration code - REFACTOR
 import { auth } from './lib/service';
-const hydrateSession = (req) => {
-	if (req && req.session) {
-		// we ONLY hydrate the authenication information
-		// the rest _must_ be hydrated via actions.
-		req.session.state = { auth: auth() };
-	}
-}
 
 // we prepare a store creation function with a reducer and server-side specific middleware
 import reducer from './redux/reducers'; // this adds the univesal reducers
@@ -67,16 +60,17 @@ app.use('/*', (req, res, next) => {
 // perform the rendering server side
 app.use('/*', (req, res) => {
 
-	// NOTE: I may not want to use session / state if I can avoid it
-	// TODO: More thinking needed.
-	hydrateSession(req);
-	const store = getStore(req.session.state);
+	const store = getStore();
 
 	// if an upstream express route has appended a res.action
 	// dispatch it to the store before rendering.
 	if (res.action) {
+		console.log('Server-side rendering, dispatching action', res.action);
 		store.dispatch(res.action);
 	}
+
+	console.log('Server-side rendering, store state before routing is');
+	console.log(store.getState());
 
 	// DON'T USE req.url, it's part of http not express
 	render({ routes: routesFactory(store), location: req.originalUrl, store}, (err, result) => {

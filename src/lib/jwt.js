@@ -2,7 +2,7 @@
 // Notes: 
 // 1. You need to add cookies manually to the express middleware stack.
 // 2. Be aware of the magical string "id_token"
-import jwtExpress from 'express-jwt';
+// import jwtExpress from 'express-jwt';
 import jwt from 'jsonwebtoken';
 import keys from './keys';
 import { find } from 'lodash';
@@ -28,7 +28,10 @@ const authMiddleware = jwtExpress({
 
 const COOKIE_KEY = 'id_token';
 
-// we'll leave the cookie alternative here
+// the token is retrieved either from Header or Cookie
+// technically the cookie is also in the header, but that's sent
+// by the browser. the Authorization / Bearer needs to be sent
+// programmatically via client-side JavaScript
 const getToken = req => {
 	const hasAuthorizationHeader = !!req.headers.authorization;
 	const headerParts = hasAuthorizationHeader && req.headers.authorization.split(' ');
@@ -48,15 +51,24 @@ const getToken = req => {
 // so that the client will now be able to store the token
 const maybeAddAuth = (
 	req = { headers: {}, cookies: {}, body: {} },
-	user_id = ''
+	user = {}
 ) => {
+	// TODO: I have grave doubts about inferring the presence
+	// of an action in the request.
+	if (!req.body) {
+		req.body = {};
+	}
+
+	if (!req.body.headers) {
+		req.body.headers = {};
+	}
+
 	const action = req.body;
-	if (!req.headers.authorization && req.cookies.id_token) {
-		// TODO: This doesn't make any sense at all. Better to pass in an action.
-		if (action && action.body) {
-			console.log(`adding token to action since it didn\'t have it`);
-			action.body.token = generate({ user_id });
-		}
+
+	if (!req.headers.authorization && req.cookies[COOKIE_KEY]) {
+		console.log(`adding auth information to action headers`);
+		action.headers.token = generate({ user_id: user.id });
+		action.headers.name = user.username;
 	}
 }
 
@@ -94,14 +106,14 @@ const checkToken = (token) => {
 }
 
 const authActionMiddleware = (req, res, next) => {
-	const token = getToken(req);
+	const token = getToken(req); 
 	console.log(`Verifying ${token}`);
 
 	const authenticatedUser = checkToken(token);
 
 	if (authenticatedUser) {
 		console.log(`Successfully verified user ${authenticatedUser.username}`);
-		maybeAddAuth(req, authenticatedUser.id);
+		maybeAddAuth(req, authenticatedUser);
 		next();
 	} else {
 		console.log(`Authentication failed, redirecting to /login`);
@@ -118,7 +130,7 @@ const auth = (user, password) => {
 	// returns the id of the user
 	// i should have used a proper db. this is messy
 	const userObj = find(users(), { username: user });
-	return userObj && userObj.id;
+	return userObj;
 }
 
 export default {
