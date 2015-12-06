@@ -79,6 +79,7 @@ const reducer = (state = blank, action) => {
 				newState.users = action.body.users;
 				break;
 
+			case '/users': newState.users = action.body.users; break;
 			case '/posts': newState.posts = action.body.posts; break;
 			case '/medias': newState.medias = action.body.medias; break;
 			case '/messages': newState.messages = action.body.messages; break;

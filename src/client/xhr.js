@@ -16,14 +16,24 @@
 // * action is... the action that is passed to me either from
 //   the top or the previous middleware
 
-/* global fetch */
+/* global fetch, location */
 import es6promise from 'es6-promise';
 import 'isomorphic-fetch';
 import { applyState } from '../redux/actions';
 
 es6promise.polyfill();
 
-export default store => next => action => {
+// *sigh*
+function relPathToAbs(sRelPath) {
+  var nUpLn, sDir = "", sPath = location.pathname.replace(/[^\/]*$/, sRelPath.replace(/(\/|^)(?:\.?\/+)+/g, "$1"));
+  for (var nEnd, nStart = 0; nEnd = sPath.indexOf("/../", nStart), nEnd > -1; nStart = nEnd + nUpLn) {
+    nUpLn = /^\/(?:\.\.\/)*/.exec(sPath.slice(nEnd))[0].length;
+    sDir = (sDir + sPath.substring(nStart, nEnd)).replace(new RegExp("(?:\\\/+[^\\\/]*){0," + ((nUpLn - 1) / 3) + "}$"), "/");
+  }
+  return sDir + sPath.substr(nStart);
+}
+
+export default history => store => next => action => {
 
 	// basically this is a middleware that executes xhr
 	// requests and dispatches the response from
@@ -68,8 +78,21 @@ export default store => next => action => {
 				return next(errorAction);
 			}
 
+			// there is no way to be directly aware of redirects according to WhatWG's
+			// fetch protocol. The only way is to look at the url from the response
+			const finalPath = /^[^\/]+\/\/[^\/]+(.*)$/.exec(res.url)[1];
+			const originalPath = relPathToAbs(action.url);
+
+			if (finalPath !== originalPath) {
+				// this is where we force a redirect via react-router / history
+				console.log(`AJAX redirect to ${finalPath}`)
+				return history.push(finalPath);
+			}
+
 			// TODO: do checks before dispatching
 			res.json().then(next); // ugh all these irritating promises
+		}).catch(function (err) {
+			console.log(err);
 		});
 	}
 

@@ -29,6 +29,7 @@
     "react-dom": "^0.14",
     "react-redux": "^4",
     "react-router": "^1",
+    "react-spinkit": "^1.1.4",
     "redux": "^3",
     "shortid": "^2",
     "style-loader": "^0.13",

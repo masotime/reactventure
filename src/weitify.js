@@ -2,6 +2,7 @@
 // assumes store will have a "freshness" property.
 import { connect } from 'react-redux';
 import React from 'react';
+import Spinner from 'react-spinkit';
 
 // crude way to get location
 const getLocation = () => {
@@ -42,7 +43,7 @@ const weitify = AsyncRoute => {
 			switch (freshness.state) {
 				case 'success': return <AsyncRoute {...props} />;
 				case 'failure': return <div>FAILED TO LOAD!!!</div>;
-				case 'pending': return <div>Please WEIT....</div>;
+				case 'pending': return <Spinner spinnerName="double-bounce" noFadeIn />;
 			}
 		}
 	}));
