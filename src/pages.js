@@ -3,7 +3,7 @@ import { Users, Messages, Medias, Posts } from './crud/list';
 import { connect } from 'react-redux';
 
 // this is for creating actions
-import { POST } from './redux/actions';
+import { POST, fieldUpdateAction } from './redux/actions';
 
 const Dashboard = React.createClass({
 	render() {
@@ -55,15 +55,35 @@ const UserButtons = React.createClass({
 });
 
 const Login = React.createClass({
+
 	render() {
 		const props = this.props,
 			dispatch = props.dispatch,
 			hasUsers = props.users && props.users.length > 0;
 
-		return (<div>
+		const events = {
+			onSubmit: () => dispatch(POST('/login')),
+			name: {
+				onChange: e => dispatch(fieldUpdateAction('loginform.name', e.target.value))
+			},
+			password: {
+				onChange: (e) => dispatch(fieldUpdateAction('loginform.password', e.target.value))
+			}
+		}
+
+		return (
+			<div>
 				<h2>{ hasUsers ? 'Select a user to login (no passwords wooo!)' : 'No users found. Guess you&rsquo;re out of luck'}</h2>
-				<UserButtons dispatch={dispatch} users={props.users} />
-		</div>);
+				<ul>
+					{ props.users.map( (user) => <li key={user.id}><span>{user.username}</span></li> ) }
+				</ul>
+				<form onSubmit={events.onSubmit} >
+					<div><label>username</label><input type="text" name="username" value={props.loginform.username} onChange={events.name.onChange} /></div>
+					<div><label>password</label><input type="password" name="password" value={props.loginform.password} onChange={events.password.onChange} /></div>
+					<button type="submit">Submit</button>
+				</form>
+			</div>
+		);
 	}
 });
 
@@ -143,6 +163,6 @@ const Inbox = React.createClass({
 
 export default { 
 	About: AboutPage, Dashboard, // public pages
-	Login: connect(state => ({users: state.users}))(Login), Logout, // auth related
+	Login: weitify(connect( ({users, loginform}) => ({users, loginform}) )(Login)), Logout, // auth related
 	UsersPage, MessagesPage, MediasPage, PostsPage // protected pages
 };

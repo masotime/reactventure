@@ -31,7 +31,12 @@ const basicRoutes = ((router) => {
 	router.get('/login', (req, res, next) => {
 		// load users to login with
 		// TODO: USERS DUMP, EXPERIMENTATION ONLY, REMOVE LATER
-		req.action.body = { users : users() };
+		req.action.body = { 
+			users : users(), 
+			loginform: { 
+				username: '', password: '' 
+			} 
+		};
 		res.action = applyState('success')(req.action);
 		next();
 	});

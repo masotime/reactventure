@@ -26,8 +26,14 @@ const applyState = (state, error) => action => {
 	return newAction;
 }
 
+const fieldUpdateAction = (path, value) => ({
+	type: 'FIELD_UPDATE',
+	path, value
+});
+
 export default {
 	routeAction,
+	fieldUpdateAction,
 	GET: url => routeAction(url, 'GET'),
 	POST: url => routeAction(url, 'POST'),
 	applyState

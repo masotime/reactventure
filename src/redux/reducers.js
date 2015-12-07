@@ -1,4 +1,4 @@
-import { cloneDeep, /* remove */ } from 'lodash';
+import { cloneDeep, set /* remove */ } from 'lodash';
 
 // a blank slate schema is as follows
 const blank = {
@@ -7,19 +7,27 @@ const blank = {
 		loggingIn: false,
 		loggedIn: false,
 		error: undefined
-	},
-	users: [],
-	messages: [],
-	posts: [],
-	medias: []
+	}
+};
+
+// TODO: Refactor!!!!
+const nonRouteAction = (state, action) => {
+	if (action.type === 'FIELD_UPDATE') {
+		const path = action.path;
+		const value = action.value;
+		return set(state, path, value);
+	}
+
+	return state;
 };
 
 // this reducer will deal with "urls"
 const reducer = (state = blank, action) => {
-	const newState = cloneDeep(state);
+	let newState = cloneDeep(state);
 	const { auth } = newState;
 
-	console.log('got an action',action);
+	console.log('got an action', action);
+	newState = nonRouteAction(state, action); // TODO: REFACTOR!!!!
 
 	// if any action contains .headers.token, then we transfer that information
 	// (token, username) into the state. This means we don't have to handle
@@ -77,6 +85,7 @@ const reducer = (state = blank, action) => {
 			case '/login': 
 				// TODO: This is problematic, is there a better way of doing this???
 				newState.users = action.body.users;
+				newState.loginform = action.body.loginform;
 				break;
 
 			case '/users': newState.users = action.body.users; break;
