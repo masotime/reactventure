@@ -38,8 +38,8 @@ const weitify = AsyncRoute => {
 		render() {
 			const props = this.props;
 			const freshness = getFreshness(props, getLocation().pathname);
-			// render different things based on whether or not the page is still loading
 
+			// render different things based on whether or not the page is still loading
 			switch (freshness.state) {
 				case 'success': return <AsyncRoute {...props} />;
 				case 'failure': return <div>FAILED TO LOAD!!!</div>;

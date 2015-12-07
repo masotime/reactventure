@@ -23,11 +23,9 @@ const nonRouteAction = (state, action) => {
 
 // this reducer will deal with "urls"
 const reducer = (state = blank, action) => {
-	let newState = cloneDeep(state);
-	const { auth } = newState;
-
 	console.log('got an action', action);
-	newState = nonRouteAction(state, action); // TODO: REFACTOR!!!!
+	const newState = cloneDeep(nonRouteAction(state, action)); // TODO: REFACTOR!!!!
+	const { auth } = newState;
 
 	// if any action contains .headers.token, then we transfer that information
 	// (token, username) into the state. This means we don't have to handle

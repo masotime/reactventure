@@ -62,15 +62,19 @@ const Login = React.createClass({
 			hasUsers = props.users && props.users.length > 0;
 
 		const events = {
-			onSubmit: () => dispatch(POST('/login')),
+			onSubmit: (e) => {
+				e.preventDefault();
+				dispatch(POST('/login')({ name: props.loginform.username, password: props.loginform.password }));
+			},
 			name: {
-				onChange: e => dispatch(fieldUpdateAction('loginform.name', e.target.value))
+				onChange: e => dispatch(fieldUpdateAction('loginform.username', e.target.value))
 			},
 			password: {
-				onChange: (e) => dispatch(fieldUpdateAction('loginform.password', e.target.value))
+				onChange: e => dispatch(fieldUpdateAction('loginform.password', e.target.value))
 			}
 		}
 
+		console.log('Login component rendered, username = ' + props.loginform.username);
 		return (
 			<div>
 				<h2>{ hasUsers ? 'Select a user to login (no passwords wooo!)' : 'No users found. Guess you&rsquo;re out of luck'}</h2>

@@ -40,7 +40,7 @@ import render from './client/render';
 
 // assuming it will magically work
 const store = getStore(window.__INITIAL_STATE__);
-
+window.store = store; // for debugging
 
 render({
 	routes: routesFactory(store),
