@@ -35,6 +35,7 @@ app.use(express.static('build/public'));
 //
 import { maybeAddAuth } from './lib/jwt';
 import { routeAction } from './redux/actions';
+
 app.use('/*', (req, res, next) => {
 	// base action, with empty body and headers
 	let action = routeAction(req.originalUrl, req.method)({}, {});
@@ -54,6 +55,36 @@ app.use('/*', (req, res, next) => {
 	action = maybeAddAuth(req, action);
 
 	req.action = action;
+	res.store = getStore(); // equivalent of req.model for old Kraken
+
+	// we augment the response with an action and actionRedirect
+	// both of which will provide specialized responses for redux actions
+	res.action = (action = req.action) => {
+		console.log('[res.action] action = '+JSON.stringify(action, null, 4));
+		if (req.xhr) {
+			// respond with JSON containing the action
+			console.log('[res.action] xhr request detected. server responds with JSON');
+			return res.json(action);
+		} else {
+			// dispatch the action and render server-side
+			console.log('[res.action] performing server-side render and routing');
+			res.store.dispatch(action);
+			renderRouter(req, res);
+		}
+	};
+
+	res.actionRedirect = (action = req.action, route) => {
+		if (req.xhr) {
+			console.log('creating a "redirect" action');
+			action.status = 302;
+			action.headers.location = route;
+			res.action(action); // simple passthrough
+		} else {
+			// unsafe to add action information to the route URL
+			// action before redirect won't be supported for now.
+			res.redirect(route);
+		}
+	};
 
 	console.log(`[server-side] Action ${action.method} ${action.url}`);
 	console.log(`[server-side] ${action.body}`);
@@ -67,31 +98,10 @@ app.use(basicRoutes);
 app.use(securedRoutes);
 app.use(authRoutes);
 
-// we first have a delegate that catches all xhr requests
-// if it is an xhr, we simply return a JSON and let the client side
-// handle the rendering
-app.use('/*', (req, res, next) => {
-	if (req.xhr && res.action) {
-		console.log('xhr request detected. server responds with res.action =', res.action);
-		res.json(res.action);
-	} else {
-		return next();
-	}
-});
-
-// otherwise, we dispatch the action to the store and
-// perform the rendering server side
-app.use('/*', (req, res) => {
-
-	const store = getStore();
-
-	// if an upstream express route has appended a res.action
-	// dispatch it to the store before rendering.
-	if (res.action) {
-		store.dispatch(res.action);
-	}
-
+const renderRouter = (req, res) => {
 	// DON'T USE req.url, it's part of http not express
+	const { store } = res;
+
 	render({ routes: routesFactory(store), location: req.originalUrl, store}, (err, result) => {
 		if (err) {
 			return res.status(500).send(err);
@@ -114,7 +124,7 @@ app.use('/*', (req, res) => {
 			`);
 		}
 	});
-});
+}
 
 // error handling. there doesn't seem to be any elegant way to handle this
 app.use(function handleErrors(err, req, res, next) {

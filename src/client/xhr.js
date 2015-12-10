@@ -16,22 +16,12 @@
 // * action is... the action that is passed to me either from
 //   the top or the previous middleware
 
-/* global fetch, location */
+/* global fetch */
 import es6promise from 'es6-promise';
 import 'isomorphic-fetch';
 import { applyState } from '../redux/actions';
 
 es6promise.polyfill();
-
-// taken from https://goo.gl/PTLiVr
-function relPathToAbs(sRelPath) {
-  var nUpLn, sDir = "", sPath = location.pathname.replace(/[^\/]*$/, sRelPath.replace(/(\/|^)(?:\.?\/+)+/g, "$1"));
-  for (var nEnd, nStart = 0; nEnd = sPath.indexOf("/../", nStart), nEnd > -1; nStart = nEnd + nUpLn) {
-    nUpLn = /^\/(?:\.\.\/)*/.exec(sPath.slice(nEnd))[0].length;
-    sDir = (sDir + sPath.substring(nStart, nEnd)).replace(new RegExp("(?:\\\/+[^\\\/]*){0," + ((nUpLn - 1) / 3) + "}$"), "/");
-  }
-  return sDir + sPath.substr(nStart);
-}
 
 export default history => store => next => action => {
 
@@ -52,8 +42,7 @@ export default history => store => next => action => {
 	next(action);
 
 	// we need to prepare a payload for the fetch.
-	// seriously annoying.
-	let payload = {
+	const payload = {
 		method: action.method || 'GET',
 		headers: { // this is even more irritating. fetch is not considered an XHR wtf.
 			'Accept': 'application/json',
@@ -82,19 +71,19 @@ export default history => store => next => action => {
 			return next(errorAction);
 		}
 
-		// there is no way to be directly aware of redirects according to WhatWG's
-		// fetch protocol. The only way is to look at the url from the response
-		const finalPath = /^[^\/]+\/\/[^\/]+(.*)$/.exec(res.url)[1];
-		const originalPath = relPathToAbs(action.url);
-
-		if (finalPath !== originalPath) {
-			// this is where we force a redirect via react-router / history
-			console.log(`AJAX redirect to ${finalPath}`)
-			return history.push(finalPath);
-		}
-
 		// TODO: do checks before dispatching
-		res.json().then(next); // ugh all these irritating promises
+		console.log('[client] marshalling action from server json');
+		res.json().then(function(action) {
+			console.log('[client] dispatching action from server');
+			next(action);
+
+			// if the action has a redirect, then perform it
+			if (action.status === 302 && action.headers.location) {
+				console.log(`[client] performing in-browser redirection to ${action.headers.location}`);
+				history.push(action.headers.location)
+			}
+
+		}); // ugh all these irritating promises
 	}).catch(function (err) {
 		console.error(err);
 	});

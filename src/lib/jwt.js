@@ -116,6 +116,8 @@ const checkToken = (token) => {
 	return find(users(), { id: decoded.user_id });
 }
 
+import { applyState } from '../redux/actions';
+
 const authActionMiddleware = (req, res, next) => {
 	const token = getToken(req); 
 	console.log(`Verifying ${token}`);
@@ -128,10 +130,11 @@ const authActionMiddleware = (req, res, next) => {
 		next();
 	} else {
 		console.log(`Authentication failed, redirecting to /login`);
-		res.redirect('/login');
+		const action = applyState('failure')(req.action);
+		action.body.originalUrl = req.originalUrl;
+		res.actionRedirect(action, '/login');
 	}
 }
-
 
 // synchronous? asynchronous? to A or not to A.
 const auth = (user, password) => {

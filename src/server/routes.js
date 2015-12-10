@@ -5,18 +5,16 @@ import { users, posts, medias, messages } from '../lib/service';
 
 // these are basic routes, without security
 const basicRoutes = ((router) => {
-	router.get('/', (req, res, next) => {
+	router.get('/', (req, res) => {
 		console.log('Index page');
-		next();
+		res.action();
 	});
 
-	router.get('/dashboard', (req, res, next) => {
-		// noop
-		res.action = applyState('success')(req.action);
-		next();
+	router.get('/dashboard', (req, res) => {
+		res.action(applyState('success')(req.action));
 	});
 
-	router.get('/about', (req, res, next) => {
+	router.get('/about', (req, res) => {
 		req.action.body = {
 			content : {
 				header: 'About BenBook',
@@ -24,11 +22,10 @@ const basicRoutes = ((router) => {
 			}
 		};
 
-		res.action = applyState('success')(req.action);
-		next();
+		res.action(applyState('success')(req.action));
 	});
 
-	router.get('/login', (req, res, next) => {
+	router.get('/login', (req, res) => {
 		// load users to login with
 		// TODO: USERS DUMP, EXPERIMENTATION ONLY, REMOVE LATER
 		req.action.body = { 
@@ -37,22 +34,11 @@ const basicRoutes = ((router) => {
 				username: '', password: '' 
 			} 
 		};
-		res.action = applyState('success')(req.action);
-		next();
+		res.action(applyState('success')(req.action));
 	});
-
 
 	return router;
 })(Router());
-
-// fake slow load times
-const fakeLoad = ({res, action, next, delay}) => {
-	setTimeout( () => {
-		res.action = applyState('success')(action);
-		console.log('fakeload complete');
-		next();
-	}, delay);
-}
 
 // these are secured routes
 import { authActionMiddleware } from '../lib/jwt';
@@ -60,32 +46,32 @@ const securedRoutes = ((router, authMiddleware) => {
 
 	const delay = 1000;
 
-	router.get('/users', authMiddleware, (req, res, next) => {
+	router.get('/users', authMiddleware, (req, res) => {
 		console.log('Load users');
 		req.action.body = { users: users() };
 
-		fakeLoad({ res, action: req.action, next, delay});
+		setTimeout( () => res.action(applyState('success')(req.action)), delay);
 	});
 
-	router.get('/posts', authMiddleware, (req, res, next) => {
+	router.get('/posts', authMiddleware, (req, res) => {
 		console.log('Load posts');
 		req.action.body = { posts: posts() };
 
-		fakeLoad({ res, action: req.action, next, delay});
+		setTimeout( () => res.action(applyState('success')(req.action)), delay);
 	});
 
-	router.get('/medias', authMiddleware, (req, res, next) => {
+	router.get('/medias', authMiddleware, (req, res) => {
 		console.log('Load medias');
 		req.action.body = { medias: medias() };
 
-		fakeLoad({ res, action: req.action, next, delay});
+		setTimeout( () => res.action(applyState('success')(req.action)), delay);
 	});
 
-	router.get('/messages', authMiddleware, (req, res, next) => {
+	router.get('/messages', authMiddleware, (req, res) => {
 		console.log('Load messages');
 		req.action.body = { messages: messages() };
 
-		fakeLoad({ res, action: req.action, next, delay});
+		setTimeout( () => res.action(applyState('success')(req.action)), delay);
 	});
 
 	return router;
@@ -98,7 +84,7 @@ import { auth, generate, addTokenCookie, logout } from '../lib/jwt';
 const authRoutes = ((router, auth, generate) => {
 
 	// this route does the actual login stuff
-	router.post('/login', (req, res, next) => {
+	router.post('/login', (req, res) => {
 		const action = req.action;
 		const user = auth(action.body.name, action.body.password);
 		if (user) {
@@ -108,41 +94,22 @@ const authRoutes = ((router, auth, generate) => {
 			action.headers = action.headers || {};
 			action.headers.token = generate(payload);
 			action.headers.name = user.username;
-			res.action = applyState('success')(action);
 			addTokenCookie(res, payload); // add it to the client cookie as well, HTTP Only
+			res.actionRedirect(applyState('success')(action), '/dashboard');
 		} else {
 			// respond with an action
-			res.action = applyState('error', { 
+			res.action(applyState('error', { 
 				message: 'Authentication failure'
-			})(action);
+			})(action));
 		}
-
-		next();
 	});
 
-	router.get('/logout', (req, res, next) => {
+	router.get('/logout', (req, res) => {
 		// remove auth information from client-side (action.headers)
 		// as well as server-side (cookies).
 		const action = logout(res, req.action);
-
-		res.action = applyState('success')(action);
-		next();
+		res.redirectAction(applyState('success')(action), '/about');
 	});
-
-	// this route checks the header for a valid jwt and 
-	// sets an appropriate cookie. "authenticate" adds
-	// the token to the body which we will retrieve
-	// TODO: Do we need this???
-	/*
-	import moment from 'moment';
-	router.post('/authorize-cookie', authenticate, (req, res) => {
-		res.cookie('id_token', req.body.token, {
-			expires: moment().add(1, 'hour'),
-			httpOnly: true
-		});
-		res.json({ message: 'Cookie set!' });
-	});
-	*/
 
 	return router;
 

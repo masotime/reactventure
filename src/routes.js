@@ -16,9 +16,10 @@ export default store => {
 	const requireAuth = (nextState, replaceState) => {
 		const { auth: { loggedIn }} = store.getState();
 
-		if (!loggedIn) {
+		/*if (!loggedIn) {
+			console.log('[react-router] auth failed, redirecting to /login');
 			replaceState(null, '/login');
-		}
+		}*/
 	}
 
 	const logout = () => {
