@@ -1,4 +1,5 @@
-import { cloneDeep, set /* remove */ } from 'lodash';
+import { cloneDeep, set, get } from 'lodash';
+import { combineReducers } from 'redux';
 
 // a blank slate schema is as follows
 const blank = {
@@ -10,6 +11,13 @@ const blank = {
 	}
 };
 
+const initialAuth = {
+	user: undefined,
+	loggingIn: false,
+	loggedIn: false,
+	error: undefined
+}
+
 // TODO: Refactor!!!!
 const nonRouteAction = (state, action) => {
 	if (action.type === 'FIELD_UPDATE') {
@@ -20,6 +28,104 @@ const nonRouteAction = (state, action) => {
 
 	return state;
 };
+
+// auth reducer
+const authReducer = (state = initialAuth, action) => {
+
+	const auth = cloneDeep(state);
+	auth.loggingIn = false;
+
+	// if any action contains .headers.token, then we transfer that information
+	// (token, username) into the state. This means we don't have to handle
+	// POST /login separately.
+	if (action && action.headers && action.headers.token) {
+		console.log('transferring auth information from action header to state');
+		auth.token = action.headers.token;
+		auth.user = action.headers.name;
+		auth.loggedIn = true;
+	}
+
+	if (action.method === 'GET' && action.url === '/logout') {
+		switch (action.state) {
+			case 'pending': break;
+			case 'success': delete auth.token; auth.user = undefined; auth.loggedIn = false; break;
+			case 'failure': auth.error = action.error; break;
+		}
+
+	}
+
+	if (action.method === 'POST' && action.url === '/login') {
+		// success case applies for any route
+		switch (action.state) {
+			case 'pending': auth.loggingIn = true; break;
+			case 'failure': auth.error = action.error; break;
+		}
+	}
+
+	return auth;
+
+}
+
+// freshness reducer
+const freshnessReducer = (state = {}, action) => {
+
+	const freshness = cloneDeep(state);
+
+	// we track the "freshness" of the retrieved data
+	if (action.method === 'GET') { // TODO: may not always be a GET
+		const url = action.url;
+		const timestamp = (new Date()).getTime();
+		freshness[url] = freshness[url] || {};
+
+		switch (action.state) {
+			case 'pending':
+				console.log(`setting freshness[${url}] to pending`);
+				freshness[url].state = 'pending';
+				break;
+
+			case 'failure': 
+				console.log(`setting freshness[${url}] to failure`);
+				freshness[url].state = 'failure';
+				freshness[url].timestamp = timestamp;
+				break; // what do i do?
+
+			case 'success': 
+				console.log(`setting freshness[${url}] to success`);
+				freshness[url].state = 'success';
+				freshness[url].timestamp = timestamp;
+				break;
+		}
+	}
+
+	return freshness;
+
+}
+
+const replacementReducerMaker = (path, conditional = () => true) => {
+	return (state = {}, action) => {
+		if (conditional(action, state) && get(action, path)) {
+			return cloneDeep(get(action, path));
+		}
+	}
+}
+
+const contentReducer = (state = {}, action) => {
+
+	let content;
+
+	switch (action.url) {
+		case '/dashboard':
+			if (action.state === 'success') {
+				content = cloneDeep(action.body && action.body.content || {});
+			}
+	}
+
+	return content;
+}
+
+const usersReducer = (state = {}, action) => {
+
+}
 
 // this reducer will deal with "urls"
 const reducer = (state = blank, action) => {
@@ -123,20 +229,3 @@ const reducer = (state = blank, action) => {
 };
 
 export default reducer;
-
-// this is really to KIV my previous work
-/*
-const removerReducer = (state = blank, action) => {
-	const newState = cloneDeep(state);
-	const removeUsingId = type => remove(newState[type], 'id', action.id);
-
-	// let's just do deletion for now
-	switch (action.type) {
-		case 'DELETE_MESSAGE': removeUsingId('message'); break;
-		case 'DELETE_POST': removeUsingId('post'); break;
-		case 'DELETE_MEDIA': removeUsingId('media'); break;
-	}
-
-	return newState;
-}
-*/

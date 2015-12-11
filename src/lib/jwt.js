@@ -136,7 +136,6 @@ const authActionMiddleware = (req, res, next) => {
 	}
 }
 
-// synchronous? asynchronous? to A or not to A.
 const auth = (user, password) => {
 	// we ignore the password
 	console.log(`auth on ${user} / ${password} auto-success`);
