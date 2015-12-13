@@ -1,5 +1,5 @@
 import express from 'express';
-import routesFactory from './routes';
+import routes from './routes';
 import render from './server/render';
 import ignite from './lib/ignite'; // this adds webpack hot loading
 
@@ -33,64 +33,83 @@ app.use(express.static('build/public'));
 // once done, we define a req.action which express routes will use to
 // do further processing.
 //
-import { maybeAddAuth } from './lib/jwt';
+import { authSync } from './lib/jwt';
 import { routeAction } from './redux/actions';
 
-app.use('/*', (req, res, next) => {
-	// base action, with empty body and headers
+app.use((req, res, next) => {
+	// base "ROUTE" action, with empty body and headers
 	let action = routeAction(req.originalUrl, req.method)({}, {});
+	const actionQueue = [];
+	const store = getStore();
 
-	// augment action if it already exists
+	// if the request has a body, then we use that instead
+	// to represent the action
 	if (req.body && req.body.type === 'ROUTE') {
 		action = req.body;
 		action.body = action.body || {};
 		action.headers = action.headers || {};
 
-		// we force the originalUrl and method to match the actual type of the request
-		// to prevent CSRF bypassing a POST etc.
+		// however, we force the url and method to match the 
+		// actual HTTP url and method to prevent possible abuse.
 		action.url = req.originalUrl;
 		action.method = req.method;
 	}
 
-	action = maybeAddAuth(req, action);
-
+	// declare an "action" on the request
 	req.action = action;
-	res.store = getStore(); // equivalent of req.model for old Kraken
+
+	// utility methods
+	res.getState = () => store.getState();
 
 	// we augment the response with an action and actionRedirect
 	// both of which will provide specialized responses for redux actions
-	res.action = (action = req.action) => {
-		console.log('[res.action] action = '+JSON.stringify(action, null, 4));
-		if (req.xhr) {
-			// respond with JSON containing the action
-			console.log('[res.action] xhr request detected. server responds with JSON');
-			return res.json(action);
-		} else {
-			// dispatch the action and render server-side
-			console.log('[res.action] performing server-side render and routing');
-			res.store.dispatch(action);
-			renderRouter(req, res);
-		}
+	res.dispatch = (action = req.action) => {
+		console.log('[server] dispatch action = ' + JSON.stringify(action, null, 4));
+		actionQueue.push(action); 
 	};
 
-	res.actionRedirect = (action = req.action, route) => {
+	res.universalRender = () => {
+		// check the last action in the queue. If it is not a ROUTE action,
+		// then send a base ROUTE action with a 200 status code
+		if ((actionQueue[actionQueue.length - 1] || {}).type !== 'ROUTE') {
+			const finishAction = routeAction(req.originalUrl, req.method)({}, {});
+			finishAction.status = res.statusCode || 200;
+			actionQueue.push(finishAction);
+		}
+
 		if (req.xhr) {
-			console.log('creating a "redirect" action');
-			action.status = 302;
-			action.headers.location = route;
-			res.action(action); // simple passthrough
+			// respond with JSON containing the action
+			console.log('[server] universalRender | xhr | respond with JSON queue');
+			return res.json(actionQueue);
 		} else {
-			// unsafe to add action information to the route URL
-			// action before redirect won't be supported for now.
+			// dispatch the action and render server-side
+			console.log('[server] universalRender | server-side | dispatch all and respond with HTML');
+			actionQueue.forEach( action => store.dispatch(action) );
+			renderRouter(req, res, store);
+		}
+	}
+
+	res.universalRedirect = (route) => {
+		const redirectAction = routeAction(req.originalUrl, req.method)({}, {});
+		redirectAction.status = 302;
+		redirectAction.headers.location = route;
+		res.dispatch(redirectAction); // simple passthrough
+
+		if (req.xhr) {
+			console.log('[server] dispatchRedirect | xhr | ending with redirect action');
+			res.universalRender(); // terminate. We should not do anything else after a redirect
+		} else {
+			// note that a server-side redirect means that all actions queued are lost
+			// this is consistent with how redirect works normally.
 			res.redirect(route);
 		}
 	};
 
-	console.log(`[server-side] Action ${action.method} ${action.url}`);
-	console.log(`[server-side] ${action.body}`);
-
+	console.log(`[server] req.action ${JSON.stringify(req.action, null, 4)}`);
 	next();
 });
+
+app.use(authSync);
 
 // we apply express routes
 import { basicRoutes, securedRoutes, authRoutes } from './server/routes';
@@ -98,11 +117,9 @@ app.use(basicRoutes);
 app.use(securedRoutes);
 app.use(authRoutes);
 
-const renderRouter = (req, res) => {
-	// DON'T USE req.url, it's part of http not express
-	const { store } = res;
+const renderRouter = (req, res, store) => {
 
-	render({ routes: routesFactory(store), location: req.originalUrl, store}, (err, result) => {
+	render({ routes, location: req.originalUrl, store}, (err, result) => {
 		if (err) {
 			return res.status(500).send(err);
 		} else if (result.code === 302) {
@@ -115,7 +132,6 @@ const renderRouter = (req, res) => {
 <!doctype html>
 <html>
 	<head></head>
-	<!-- I give up - it is way too troublesome to not render into an outer container -->
 	<body><div id="react-container">${result.output}</div></body>
 	<!-- Hydration -->
 	<script>window.__INITIAL_STATE__ = ${JSON.stringify(result.state)}</script>
@@ -126,14 +142,9 @@ const renderRouter = (req, res) => {
 	});
 }
 
-// error handling. there doesn't seem to be any elegant way to handle this
 app.use(function handleErrors(err, req, res, next) {
 	console.error(err && err.stack);
-	if (err.name === 'UnauthorizedError') {
-		res.redirect('/login');
-	} else {
-		next(err);
-	}
+	res.status(500).send(err.stack);
 });
 
 const server = app.listen(8000, () => {

@@ -19,7 +19,6 @@
 /* global fetch */
 import es6promise from 'es6-promise';
 import 'isomorphic-fetch';
-import { applyState } from '../redux/actions';
 
 es6promise.polyfill();
 
@@ -34,17 +33,16 @@ export default history => store => next => action => {
 		return next(action);
 	}
 
-	// TODO: timeouts, and error handling from the server
-	// start by initiating - we will define an attribute "state" that
-	// represents the state of the "request" - 'pending', 'success', 'error'
+	// as the action is essentially mimicking a HTTP request
+	// we use similar HTTP status codes. Apparently, 102 means "processing"
 	// TODO: Make an immutable clone
-	action.state = 'pending';
+	action.status = 102;
 	next(action);
 
-	// we need to prepare a payload for the fetch.
+	// we need to prepare a payload for the fetch method.
 	const payload = {
 		method: action.method || 'GET',
-		headers: { // this is even more irritating. fetch is not considered an XHR wtf.
+		headers: {
 			'Accept': 'application/json',
 			'Content-Type': 'application/json',
 			'X-Requested-With': 'XMLHttpRequest' // this guarantees req.xhr === true server-side
@@ -52,8 +50,7 @@ export default history => store => next => action => {
 		credentials: 'same-origin' // for cookies to be sent in the headers
 	};
 
-	// we deal with JWT authentication. I don't like all this boilerplate in here though
-	// TODO: Find a way to refactor
+	// add JWT authentication headers.
 	const state = store.getState();
 	if (state.auth && state.auth.token) {
 		payload.headers.Authorization = 'Bearer ' + state.auth.token;
@@ -67,23 +64,38 @@ export default history => store => next => action => {
 
 	return fetch(action.url, payload).then(function(res) {
 		if (res.status >= 400) {
-			const errorAction = applyState('error', { message: `Status ${res.status}` })(action);
-			return next(errorAction);
+			console.log(`[client] HTTP Error ${res.status}`);
+			action.status = res.status;
+			action.error = { message: `An unknown error occurred, status ${res.status}` };
+			return next(action);
 		}
+		
+		console.log('[client] retrieving and dispatching actions from server');
+		res.json().then(actions => {
+			// we now have an array of actions. each action
+			// can populate the store, but the final action
+			// must be route action that will mark the request
+			// either as a success or failure
+			let lastAction = actions.pop();
 
-		// TODO: do checks before dispatching
-		console.log('[client] marshalling action from server json');
-		res.json().then(function(action) {
-			console.log('[client] dispatching action from server');
-			next(action);
+			actions.forEach(action => next(action));
 
-			// if the action has a redirect, then perform it
-			if (action.status === 302 && action.headers.location) {
-				console.log(`[client] performing in-browser redirection to ${action.headers.location}`);
-				history.push(action.headers.location)
+			// massage the last action a little, depending on the
+			// status code
+			if (lastAction.status >= 400 && !lastAction.error) {
+				lastAction.error = {
+					message: 'An unknown error occurred, status code ' + lastAction.status
+				};
 			}
 
-		}); // ugh all these irritating promises
+			// dispatch the last action
+			// also, if the action has a redirect, then perform it
+			next(lastAction);
+			if (lastAction.status === 302 && lastAction.headers.location) {
+				console.log(`[client] performing in-browser redirection to ${lastAction.headers.location}`);
+				history.push(lastAction.headers.location); // history = react-router
+			}
+		});
 	}).catch(function (err) {
 		console.error(err);
 	});

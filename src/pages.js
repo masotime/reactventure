@@ -28,32 +28,6 @@ const About = React.createClass({
 	}
 });
 
-const UserButtons = React.createClass({
-	login(user) {
-		const { dispatch } = this.props;
-		const action = POST('/login')({ name: user.username, password: '' });
-		return () => {
-			console.log('Going to dispatch', action);
-			dispatch(action)
-		};
-	},
-
-	render() {
-		const props = this.props;
-		const handlers = {
-			login: this.login // .bind(this) // ugh...
-		};
-
-		if (props.users) {
-			return (<ul>
-				{props.users.map(user => <li key={user.id}><button onClick={handlers.login(user)}type="button">{user.username}</button></li> )}
-			</ul>);
-		} else {
-			return (<p>No users</p>);
-		}
-	}
-});
-
 const Login = React.createClass({
 
 	render() {
@@ -74,12 +48,11 @@ const Login = React.createClass({
 			}
 		}
 
-		console.log('Login component rendered, username = ' + props.loginform.username);
 		return (
 			<div>
 				<h2>{ hasUsers ? 'Select a user to login (no passwords wooo!)' : 'No users found. Guess you&rsquo;re out of luck'}</h2>
 				<ul>
-					{ props.users.map( (user) => <li key={user.id}><span>{user.username}</span></li> ) }
+					{ props.users.map( (user) => <li key={user.username}><span>{user.username}</span></li> ) }
 				</ul>
 				<form onSubmit={events.onSubmit} >
 					<div><label>username</label><input type="text" name="username" value={props.loginform.username} onChange={events.name.onChange} /></div>

@@ -7,7 +7,7 @@
 import './css/main.css';
 
 // this is the application specific routes and reducers
-import routesFactory from './routes';
+import routes from './routes';
 
 // we also create a history client side. the history is the "counterpart" to the location
 // required on the server-side. It will have a custom listener that will fire off
@@ -43,7 +43,7 @@ const store = getStore(window.__INITIAL_STATE__);
 window.store = store; // for debugging
 
 render({
-	routes: routesFactory(store),
+	routes,
 	location: window.location, // this is unused, but here to maintain parity with server-side "render"
 	history,
 	store

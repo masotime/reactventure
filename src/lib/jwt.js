@@ -7,25 +7,6 @@ import jwt from 'jsonwebtoken';
 import keys from './keys';
 import { find } from 'lodash';
 
-// Don't want to use this for now
-/*
-const authMiddleware = jwtExpress({
-	secret: new Buffer(keys.CLIENT_SECRET, 'base64'),
-	audience: keys.CLIENT_ID,
-	// Custom function to retrieve the JWT - look for it in header, then look in cookie
-	getToken: function fromHeaderOrCookie(req) {
-		const hasAuthorizationHeader = !!req.headers.authorization;
-		const headerParts = hasAuthorizationHeader && req.headers.authorization.split(' ');
-		if (hasAuthorizationHeader && headerParts[0] === 'Bearer') {
-			return headerParts[1];
-		} else {
-			return req.cookies.id_token;
-		}
-		return null;
-	}
-});
-*/
-
 const COOKIE_KEY = 'id_token';
 
 // the token is retrieved either from Header or Cookie
@@ -47,40 +28,30 @@ const getToken = req => {
 
 // if an action doesn't have auth header information, but
 // cookies do,
-// 1. verify that the cookie's claims are correc
-// 2. transfer that information into the action's headers
-//
-// this will allow the reducers to add this information to
-// the store, server side (via server-actions) and client-side
-// (via state hydration)
-//
-// in addition, this is consistent with the client-side logic of always
-// including the Authorization Bearer request header if the user is logged in
-// which it can only do if the client-side state is hydrated with auth information
-const maybeAddAuth = (req, action = {}) => {
+// 1. verify that the cookie's claims are correct
+// 2. dispatch an authentication action
+const authSync = (req, res, next) => {
 	const token = getToken(req);
+	const hasAuthorizationHeader = !!req.headers.authorization;
 
-	if (token) {
+	if (token && !hasAuthorizationHeader) {
 		const user = checkToken(token);
 
 		if (user) {
-			console.log(`adding auth information to action headers`);
-			action.headers = action.headers || {};
-			action.headers.token = generate({ user_id: user.id });
-			action.headers.name = user.username;
+			console.log(`transferring auth from cookie to store`);
+			res.dispatch({
+				type: 'AUTHENTICATE',
+				token: generate({ user_id: user.id }),
+				name: user.username
+			});
 		}
 	}
 
-	return action;
+	next();
 }
 
-const logout = (res, action) => {
+const logout = (res) => {
 	res.clearCookie(COOKIE_KEY);
-	if (action && action.headers) {
-		delete action.headers.token;
-		delete action.headers.user;
-	}
-	return action;
 }
 
 // this is a convenience function that will add a response cookie
@@ -116,8 +87,6 @@ const checkToken = (token) => {
 	return find(users(), { id: decoded.user_id });
 }
 
-import { applyState } from '../redux/actions';
-
 const authActionMiddleware = (req, res, next) => {
 	const token = getToken(req); 
 	console.log(`Verifying ${token}`);
@@ -126,13 +95,15 @@ const authActionMiddleware = (req, res, next) => {
 
 	if (authenticatedUser) {
 		console.log(`Successfully verified user ${authenticatedUser.username}`);
-		maybeAddAuth(req, authenticatedUser);
 		next();
 	} else {
 		console.log(`Authentication failed, redirecting to /login`);
-		const action = applyState('failure')(req.action);
-		action.body.originalUrl = req.originalUrl;
-		res.actionRedirect(action, '/login');
+		res.dispatch({
+			type: 'ACCESS_ATTEMPT',
+			url: req.originalUrl
+		});
+
+		res.universalRedirect('/login');
 	}
 }
 
@@ -147,5 +118,5 @@ const auth = (user, password) => {
 }
 
 export default {
-	authActionMiddleware, addTokenCookie, maybeAddAuth, logout, checkToken, generate, auth
+	authActionMiddleware, addTokenCookie, authSync, logout, checkToken, generate, auth
 };
