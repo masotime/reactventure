@@ -3,31 +3,15 @@
 import { RoutingContext, match } from 'react-router';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
+import { reduxify } from '../universal/redux';
 
-// redux imports
-import { Provider } from 'react-redux';
+import { log } from '../lib/extras';
 
-// react-redux decorator
-const reduxify = (component, store) => {
-	return {
-		component: <Provider store={store}>{component}</Provider>,
-		state: store.getState()
-	};
-}
-
-// this is just for prettification, it is completely optional
-import { html_beautify } from 'js-beautify';
-import { inspect } from 'util';
-const log = (htmlOutput, state) => {
-	console.log(html_beautify(htmlOutput));
-	console.log(inspect(state, { depth: 1}));
-}
-
-// note this is asynchronous callback-style
-// render requires a state. if not provided, then a default initial state is used.
-export default function render({ routes, location, store}, cb) {
-
-	const handler = (err, redir, renderProps) => {
+// [async callback function]
+// input: { routes (react-router routes), location (url), store (redux) }
+// callback: { code (http status), url (for redirects), output (html), state (store) }
+export default function render({ routes, location, store }, cb) {
+	match({ routes, location }, (err, redir, renderProps) => {
 
 		if (err) {
 			return cb(err);
@@ -41,20 +25,16 @@ export default function render({ routes, location, store}, cb) {
 				code: 404
 			});
 		} else {
-			// prepare
-			const reduxified = reduxify(<RoutingContext {...renderProps} />, store);
-
 			// do it!
-			const output = ReactDOMServer.renderToString(reduxified.component);
-			log(output, reduxified.state); // optional logging
+			const output = ReactDOMServer.renderToString(reduxify(<RoutingContext {...renderProps} />, store));
+			const state = store.getState();
+
+			log(output, state); // optional logging
 			cb(null, {
 				code: 200,
 				output: output,
-				state: reduxified.state
+				state: state
 			});
 		}
-	};
-
-	match({ routes, location }, handler);
-
+	});
 }

@@ -30,16 +30,18 @@ history.listen(location => {
 
 
 // we prepare a store creation function with a reducer and server-side specific middleware
-import reducer from './redux/reducers'; // this adds the univesal reducers
+import rootReducer from './redux/reducers'; // this adds the univesal reducers
 import xhr from './client/xhr'; // xhr acts as a middleware to dispatch to server-side
-import storeMaker from './redux/store';
-const getStore = storeMaker(reducer, xhr(history)); // note that I pass in the history to be able to control react-router
+import { createStore } from './universal/redux';
 
 // load the client-side renderer
 import render from './client/render';
 
 // assuming it will magically work
-const store = getStore(window.__INITIAL_STATE__);
+const store = createStore(
+	{ reducer: rootReducer, initialState: window.__INITIAL_STATE__ },
+	xhr(history)
+);
 window.store = store; // for debugging
 
 render({

@@ -1,4 +1,3 @@
-// another possible name is "routes.js"
 // essentially we need to inject a client-side specific redux middleware that will 
 // perform data / I/O operations based upon the simple actions that are dispatched by
 // individual components.

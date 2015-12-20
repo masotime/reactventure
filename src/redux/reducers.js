@@ -113,7 +113,7 @@ const reducerMap = {
 	messages: populateReducerMaker('messages', [])
 }
 
-export default function (state = {}, action) {
+export default (state = {}, action) => {
 	state = cloneDeep(nonRouteAction(state, action));
 	return combineReducers(reducerMap)(state, action);
 }

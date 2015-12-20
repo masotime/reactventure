@@ -5,23 +5,16 @@ import React from 'react'; // still needed to createElement(s) as transpiled by 
 import ReactDOM from 'react-dom';
 
 // redux imports
-import { Provider } from 'react-redux';
+import { reduxify } from '../universal/redux';
 
-// react-redux decorator
-const reduxify = (component, store) => {
-	return {
-		component: <Provider store={store}>{component}</Provider>,
-		state: store.getState()
-	};
-}
-
+// [async callback function]
+// input: { routes (react-router routes), history (history object), store (redux) }
+// callback: { } // react renders to DOM
 export default function render({ routes, history, store }, cb) {
-
-	// prepare
-	const reduxified = reduxify(<Router history={history}>{routes}</Router>, store); // in contrast to <RoutingContext> server-side
-
 	// assuming it will magically work
-	ReactDOM.render(reduxified.component, document.getElementById('react-container'));
+	ReactDOM.render(
+		reduxify(<Router history={history}>{routes}</Router>, store),
+		document.getElementById('react-container')
+	);
 	cb(null);
-
 }
