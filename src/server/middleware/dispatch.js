@@ -1,30 +1,47 @@
 // adds "dispatch-like" functionality to response object
-import { createStore } from '../../universal/redux';
+import { createStore, render } from '../../universal/redux';
 import { routeAction } from '../../redux/actions';
-import render from '../render';
+
+import createHistory from '../../universal/history';
+import createRouterComponent from '../../universal/react-router';
+import { log } from '../../lib/extras';
+
 
 const reactRouterRender = ({ store, routes }, req, res) => {
 
-	render({ routes, location: req.originalUrl, store}, (err, result) => {
+	const history = createHistory(req.originalUrl);
+	createRouterComponent(routes, history, (err, Component) => {
 		if (err) {
-			return res.status(500).send(err);
-		} else if (result.code === 302) {
-			return res.status(302).redirect(result.url);
-		} else if (result.code === 404) {
-			return res.status(404).end();
-		} else {
-			// the whole __INITIAL_STATE__ thing is from https://goo.gl/bOrXPH
-			return res.status(200).send(`
+			if (err.statusCode) {
+				res.status(err.statusCode)
+			}
+
+			switch (err.constructor.name) {
+				case 'RedirectError':
+					return res.redirect(err.url);
+				case 'NotFoundError':
+					return res.end();
+				case 'ServerError':
+					return res.send(err.error.stack);
+				default:
+					return res.status(500).send(err); // unexpected error
+			}
+		}
+
+		const html = render(Component, store);
+		const state = store.getState();
+		log(html, state);
+
+		// the whole __INITIAL_STATE__ thing is from https://goo.gl/bOrXPH
+		return res.status(200).send(`
 <!doctype html>
 <html>
 	<head></head>
-	<body><div id="react-container">${result.output}</div></body>
+	<body><div id="react-container">${html}</div></body>
 	<!-- Hydration -->
-	<script>window.__INITIAL_STATE__ = ${JSON.stringify(result.state)}</script>
+	<script>window.__INITIAL_STATE__ = ${JSON.stringify(store.getState())}</script>
 	<script src="js/bundle.js"></script>
-</html>
-			`);
-		}
+</html>`);
 	});
 }
 
