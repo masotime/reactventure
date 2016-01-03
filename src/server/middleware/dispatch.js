@@ -1,16 +1,14 @@
+// import the redouter module
+import redouter from 'redouter';
+
 // adds "dispatch-like" functionality to response object
-import { createStore, render } from '../../universal/redux';
 import { routeAction } from '../../redux/actions';
-
-import createHistory from '../../universal/history';
-import createRouterComponent from '../../universal/react-router';
 import { log } from '../../lib/extras';
-
 
 const reactRouterRender = ({ store, routes }, req, res) => {
 
-	const history = createHistory(req.originalUrl);
-	createRouterComponent(routes, history, (err, Component) => {
+	const history = redouter.history(req.originalUrl);
+	redouter.reactRouter(routes, history, (err, Component) => {
 		if (err) {
 			if (err.statusCode) {
 				res.status(err.statusCode)
@@ -28,7 +26,7 @@ const reactRouterRender = ({ store, routes }, req, res) => {
 			}
 		}
 
-		const html = render(Component, store);
+		const html = redouter.redux.render(Component, store);
 		const state = store.getState();
 		log(html, state);
 
@@ -50,7 +48,7 @@ export default ({ rootReducer, initialState, routes }, ...middlewares) => (req, 
 	// base "ROUTE" action, with empty body and headers
 	let action = routeAction(req.originalUrl, req.method)({}, {});
 	const actionQueue = [];
-	const store = createStore({ reducer: rootReducer, initialState }, ...middlewares);
+	const store = redouter.redux.createStore({ reducer: rootReducer, initialState }, ...middlewares);
 
 	// if the request has a body, then we use that instead
 	// to represent the action
