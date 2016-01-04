@@ -15,8 +15,8 @@ export default ((router) => {
 	router.get('/about', (req, res) => {
 		res.dispatch(populateAction({
 			content: {
-				header: 'About BenBook',
-				body: 'Demo project to illustrate universal thinking'
+				header: 'About this site',
+				body: 'This is a demo project utilizing the res.dispatch() and ROUTE action concepts'
 			}
 		}));
 		res.universalRender();

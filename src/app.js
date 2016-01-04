@@ -22,7 +22,7 @@ const App = React.createClass({
 
 		return (
 			<div>
-				<h1 className="header">BenBook</h1>
+				<h1 className="header">Universal Thinking</h1>
 				<StatusBar {...props.session} />
 				<ul className="nav">
 					<li><Link to="/dashboard">Dashboard</Link></li>

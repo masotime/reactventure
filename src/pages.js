@@ -1,20 +1,24 @@
 import React from 'react';
 import { Users, Messages, Medias, Posts } from './crud/list';
 import { connect } from 'react-redux';
+import { Link } from 'react-router';
 
 // this is for creating actions
 import { POST, fieldUpdateAction } from './redux/actions';
 
-const Dashboard = React.createClass({
+const Dashboard = connect(
+		(state) => ({ name: state.auth.user })
+	)( React.createClass({
 	render() {
+		const { name } = this.props;
 		return (
 			<div>
-				<h1>This dashboard has been updated to <code>react@0.14.2</code> and <code>react-router@1.0.0-rc4</code></h1>
-				<p>Stats on the various entities should go here.</p>
+				<h1>A dashboard</h1>
+				{ name ? <p>Hello {name}, welcome to your dashboard</p> : <p>Hey there, you should probably <Link to="/login">login</Link> first.</p> }
 			</div>
 		);
 	}
-});
+}));
 
 const About = React.createClass({
 	render() {
