@@ -22,8 +22,8 @@ app.use(express.static('build/public'));
 // we prepare a store creation function with a reducer and server-side specific middleware
 import rootReducer from './redux/reducers'; // this adds the univesal reducers
 import routes from './routes';
-import dispatcher from './server/middleware/dispatch';
-app.use(dispatcher({
+import { server as redouter } from 'redouter';
+app.use(redouter.redouter({
 	rootReducer, initialState: {}, routes
 }));
 

@@ -28,14 +28,14 @@ export default history => store => next => action => {
 	// the server when it finally comes back.
 
 	// if not a ROUTE, passthrough
-	if (action.type !== 'ROUTE') {
+	if (action.type !== '@@redouter/ROUTE') {
 		return next(action);
 	}
 
 	// as the action is essentially mimicking a HTTP request
 	// we use similar HTTP status codes. Apparently, 102 means "processing"
 	// TODO: Make an immutable clone
-	action.status = 102;
+	action.statusCode = 102;
 	next(action);
 
 	// we need to prepare a payload for the fetch method.
@@ -62,10 +62,10 @@ export default history => store => next => action => {
 	}
 
 	return fetch(action.url, payload).then(function(res) {
-		if (res.status >= 400) {
+		if (res.statusCode >= 400) {
 			console.log(`[client] HTTP Error ${res.status}`);
-			action.status = res.status;
-			action.error = { message: `An unknown error occurred, status ${res.status}` };
+			action.statusCode = res.statusCode;
+			action.error = { message: `An unknown error occurred, status ${res.statusCode}` };
 			return next(action);
 		}
 		
@@ -81,16 +81,16 @@ export default history => store => next => action => {
 
 			// massage the last action a little, depending on the
 			// status code
-			if (lastAction.status >= 400 && !lastAction.error) {
+			if (lastAction.statusCode >= 400 && !lastAction.error) {
 				lastAction.error = {
-					message: 'An unknown error occurred, status code ' + lastAction.status
+					message: 'An unknown error occurred, status code ' + lastAction.statusCode
 				};
 			}
 
 			// dispatch the last action
 			// also, if the action has a redirect, then perform it
 			next(lastAction);
-			if (lastAction.status === 302 && lastAction.headers.location) {
+			if (lastAction.statusCode === 302 && lastAction.headers.location) {
 				console.log(`[client] performing in-browser redirection to ${lastAction.headers.location}`);
 				history.push(lastAction.headers.location); // history = react-router
 			}

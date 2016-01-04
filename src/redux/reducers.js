@@ -55,7 +55,7 @@ const authReducer = (state = initialAuth, action) => {
 const freshnessReducer = (state = {}, action) => {
 
 	// only applies for route actions
-	if (action.type !== 'ROUTE' || action.method !== 'GET') { // TODO: may not always be a GET
+	if (action.type !== '@@redouter/ROUTE' || action.method !== 'GET') { // TODO: may not always be a GET
 		return state;
 	}
 
@@ -66,7 +66,7 @@ const freshnessReducer = (state = {}, action) => {
 	const timestamp = (new Date()).getTime();
 	freshness[url] = freshness[url] || {};
 
-	switch (action.status) {
+	switch (action.statusCode) {
 		case 102:
 			console.log(`setting freshness[${url}] to pending`);
 			freshness[url].state = 'pending';

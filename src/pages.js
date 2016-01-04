@@ -4,7 +4,8 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router';
 
 // this is for creating actions
-import { POST, fieldUpdateAction } from './redux/actions';
+import { fieldUpdateAction } from './redux/actions';
+import { universal } from 'redouter';
 
 const Dashboard = connect(
 		(state) => ({ name: state.auth.user })
@@ -42,7 +43,13 @@ const Login = React.createClass({
 		const events = {
 			onSubmit: (e) => {
 				e.preventDefault();
-				dispatch(POST('/login')({ name: props.loginform.username, password: props.loginform.password }));
+				dispatch(universal.routeActions.POST({
+					url: '/login',
+					body: { 
+						name: props.loginform.username, 
+						password: props.loginform.password 
+					}
+				}));
 			},
 			name: {
 				onChange: e => dispatch(fieldUpdateAction('loginform.username', e.target.value))

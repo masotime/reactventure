@@ -4,7 +4,7 @@
 // this is the version that is loaded by the browser.
 
 // use redouter to reduce boilerplate
-import redouter from 'redouter';
+import { universal } from 'redouter';
 
 // load stuff like css
 import './css/main.css';
@@ -15,17 +15,17 @@ import activateListener from './client/listener';
 import rootReducer from './redux/reducers'; // this adds the univesal reducers
 import xhr from './client/xhr'; // xhr acts as a middleware to dispatch to server-side
 
-const history = redouter.history(); // so this will be a client-side history 
-const store = redouter.redux.createStore(
+const history = universal.createHistory(); // so this will be a client-side history 
+const store = universal.createStore(
 	{ reducer: rootReducer, initialState: window.__INITIAL_STATE__ },
 	xhr(history)
 );
 window.store = store; // for debugging
 activateListener(history, store);
-redouter.reactRouter(routes, history, (err, Component) => {
+universal.createRouterComponent(routes, history, (err, Component) => {
 	if (err) {
 		console.error(err);
 	} else {
-		redouter.redux.render(Component, store, document.getElementById('react-container'));
+		universal.render(Component, store, document.getElementById('react-container'));
 	}
 });
