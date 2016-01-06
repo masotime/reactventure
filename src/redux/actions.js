@@ -1,5 +1,3 @@
-import { cloneDeep } from 'lodash';
-
 const fieldUpdateAction = (path, value) => ({
 	type: 'FIELD_UPDATE',
 	path, value

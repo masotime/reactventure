@@ -14,10 +14,12 @@ import routes from './routes';
 import activateListener from './client/listener';
 import rootReducer from './redux/reducers'; // this adds the univesal reducers
 import xhr from './client/xhr'; // xhr acts as a middleware to dispatch to server-side
+import auth from './client/auth';
 
 const history = universal.createHistory(); // so this will be a client-side history 
 const store = universal.createStore(
 	{ reducer: rootReducer, initialState: window.__INITIAL_STATE__ },
+	auth,
 	xhr(history)
 );
 window.store = store; // for debugging

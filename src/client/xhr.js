@@ -16,6 +16,7 @@
 //   the top or the previous middleware
 
 /* global fetch */
+/* eslint no-unused-vars: [2, {"argsIgnorePattern": "store"}]*/
 import es6promise from 'es6-promise';
 import 'isomorphic-fetch';
 
@@ -41,23 +42,19 @@ export default history => store => next => action => {
 	// we need to prepare a payload for the fetch method.
 	const payload = {
 		method: action.method || 'GET',
-		headers: {
-			'Accept': 'application/json',
-			'Content-Type': 'application/json',
-			'X-Requested-With': 'XMLHttpRequest' // this guarantees req.xhr === true server-side
-		},
 		credentials: 'same-origin' // for cookies to be sent in the headers
 	};
 
-	// add JWT authentication headers.
-	const state = store.getState();
-	if (state.auth && state.auth.token) {
-		payload.headers.Authorization = 'Bearer ' + state.auth.token;
-	}
-
+	// transfer headers from the route action to the payload,
+	// and set other necessary headers
+	payload.headers = {
+		...action.headers,
+		'Accept': 'application/json',
+		'Content-Type': 'application/json',
+		'X-Requested-With': 'XMLHttpRequest' // this guarantees req.xhr === true server-side
+	};
 
 	if (!/^(GET|HEAD)$/.test(payload.method)) {
-		// the body must be some weird Form object or a string. It cannot be a JSON object wtf.
 		payload.body = JSON.stringify(action);
 	}
 
