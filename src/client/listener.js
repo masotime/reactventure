@@ -1,6 +1,7 @@
 // listens to a route change. The custom listener will fire off "route" actions to the store,
 // which via "xhr" will fetch data (or fail, if the user is not sufficiently authenticated and/or authorized)
-import { universal } from 'redouter'; // creates route GET actions
+import { helpers } from 'route-action';
+const { GET } = helpers;
 
 export default (history, store) => {
 	let initialLoad = true; // messy? prevents redundant fetch on first load.
@@ -11,7 +12,7 @@ export default (history, store) => {
 			initialLoad = false;
 		} else {
 			// TODO: this doesn't check authorization first, making a wasted trip on the server-side
-			store.dispatch(universal.routeActions.GET({url}));
+			store.dispatch(GET({url}));
 		}
 	});
 }
