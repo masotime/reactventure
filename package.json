@@ -1,6 +1,6 @@
 {
   "name": "reactventure",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "description": "Fiddling with all things React",
   "main": "index.js",
   "scripts": {
