@@ -1,1 +1,0 @@
-All client-side specific code lives here.
