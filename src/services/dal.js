@@ -1,4 +1,4 @@
-// this will be the "service" layer
+// this will be the data access layer
 import getDb from './db';
 
 export default {

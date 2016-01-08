@@ -1,5 +1,5 @@
-// this is a faux database to work with. use this server-side only, to generate initial states.
-import maker from './maker';
+// Creates a mock database using generator.js
+import maker from './generator';
 import { quickArray, choose, chooseUpTo } from './util';
 
 // for simplicity, we will have users, messages, posts and media

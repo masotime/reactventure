@@ -1,4 +1,4 @@
-// makes stuff. server-side only please. It's not universal, but 凸 it.
+// Mock data generator
 import shortid from 'shortid';
 import casual from 'casual';
 

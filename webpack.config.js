@@ -57,7 +57,7 @@ function atomize(config) {
 var config = {
   entry: {
     app: [
-      './src/client.js'
+      './src/browser.js'
     ]
   },
   output: {

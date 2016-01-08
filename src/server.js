@@ -5,7 +5,7 @@ console.log(`Server initializing...`);
 const app = express();
 
 // add the hot middleware into the stack
-import ignite from './lib/ignite'; // this adds webpack hot loading
+import ignite from './express/middleware/ignite'; // this adds webpack hot loading
 import webpackConfig from '../webpack.config';
 ignite(app, webpackConfig);
 
@@ -21,7 +21,7 @@ app.use(express.static('build/public'));
 
 // we prepare a store creation function with a reducer and server-side specific middleware
 import rootReducer from './redux/reducers'; // this adds the univesal reducers
-import routes from './routes';
+import routes from './components/routes';
 import { server as redouter } from 'redouter';
 app.use(redouter.redouter({
 	rootReducer, initialState: {}, routes
@@ -33,16 +33,16 @@ app.use(redouter.redouter({
 //
 // once done, we define a req.action which express routes will use to
 // do further processing.
-import { authSync } from './lib/jwt';
+import { authSync } from './express/middleware/security';
 app.use(authSync);
 
 // we apply express routes
-import { basicRoutes, securedRoutes, authRoutes } from './server/routes';
+import { basicRoutes, securedRoutes, authRoutes } from './express/routes';
 app.use(basicRoutes);
 app.use(securedRoutes);
 app.use(authRoutes);
 
-import errorHandler from './server/middleware/error';
+import errorHandler from './express/middleware/error';
 app.use(errorHandler);
 
 const server = app.listen(8000, () => {

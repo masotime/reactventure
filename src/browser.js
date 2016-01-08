@@ -10,15 +10,15 @@ import './css/main.css';
 import { universal, client } from 'redouter';
 
 // this is the application specific routes and reducers
-import routes from './routes';
+import routes from './components/routes';
 import rootReducer from './redux/reducers'; // this adds the univesal reducers
-import auth from './client/auth';
+import auth from './browser/auth';
 
 const history = universal.createHistory(); // so this will be a client-side history 
 const store = universal.createStore(
 	{ reducer: rootReducer, initialState: window.__INITIAL_STATE__ },
 	auth,
-	client.requestRedux(history)
+	client.requestRedux(history) // triggers request actions on url change
 );
 
 window.store = store; // for debugging
