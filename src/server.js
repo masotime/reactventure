@@ -20,7 +20,7 @@ app.use(bodyParser.text());
 app.use(express.static('build/public'));
 
 // we prepare a store creation function with a reducer and server-side specific middleware
-import rootReducer from './redux/reducers'; // this adds the univesal reducers
+import { rootReducer } from './redux/index'; // this adds the univesal reducers
 import routes from './components/routes';
 import { server as redouter } from 'redouter';
 app.use(redouter.redouter({

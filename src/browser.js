@@ -11,7 +11,7 @@ import { universal, client } from 'redouter';
 
 // this is the application specific routes and reducers
 import routes from './components/routes';
-import rootReducer from './redux/reducers'; // this adds the univesal reducers
+import { rootReducer } from './redux/index'; // this adds the univesal reducers
 import auth from './browser/auth';
 
 const history = universal.createHistory(); // so this will be a client-side history 
