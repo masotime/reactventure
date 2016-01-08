@@ -1,31 +1,29 @@
-import routesFactory from './routes';
+import routes from './components/routes';
 
-import render from './server/render';
+import { universal } from 'redouter';
 import { html_beautify } from 'js-beautify';
 
 // everything redux related
-import reducer from './redux/reducers'; // this adds the univesal reducers
-import storeMaker from './redux/store'; // lol... i need to refactor this
-const getStore = storeMaker(reducer);
+import { rootReducer } from './redux/index';
 
-import getDb from './lib/db';
+const { createStore, createHistory, createRouterComponent, render } = universal;
+
 export default function browse(url) {
-	const store = getStore(getDb());
-	const routes = routesFactory(store);
+	const store = createStore({ reducer: rootReducer });
+	const history = createHistory(url);
 
-	render({ routes, location: url, store }, (err, result) => {
+	createRouterComponent(routes, history, (err, Component) => {
 		if (err) {
-			console.error('Rendering error');
-			console.error(err.stack);
-		} else {
-			// deal with unexpected codes
-			switch (result.code) {
-				case 404: return console.log('Not found');
-				case 302: return browse(result.url);
+			switch (err.constructor.name) {
+				case 'NotFoundError': console.error(`404 NOT FOUND ${url}`); break;
+				case 'RedirectError': console.error(`302 REDIRECT ${err.url}`); break;
+				case 'ServerError': console.error(`500 ERROR ${err.error}`); break;
+				default: console.error(err);
 			}
-
-			console.log('Rendering success');
-			console.log(html_beautify(result.output));
+		} else {
+			const output = render(Component, store);
+			console.log('200 OK');
+			console.log(html_beautify(output));
 		}
 	});
 }
